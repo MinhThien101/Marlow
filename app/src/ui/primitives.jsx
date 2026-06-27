@@ -259,19 +259,21 @@ export function Toast({ tone = 'success', icon, title, description, onClose }) {
 // tree-shaking. Naming each icon lets the bundler drop the rest, which is the
 // single biggest cut to first-paint size. Add a name here when you use a new one.
 import {
-  AlignLeft, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, ChevronRight,
-  ChevronsUpDown, CodeXml, Copy, Download, FileText, GitBranch, GripVertical,
-  ImagePlus, LayoutGrid, LayoutPanelTop, LogOut, Mail, MessageSquare, Package,
-  PenLine, Pencil, Plus, Quote, RefreshCw, RotateCcw, SlidersHorizontal, Sparkle,
-  Sparkles, Sprout, Tag, ThumbsDown, ThumbsUp, Upload, X,
+  AlertCircle, AlignLeft, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check,
+  ChevronRight, ChevronsUpDown, CodeXml, Copy, Download, FileText, GitBranch,
+  GripVertical, ImagePlus, LayoutGrid, LayoutPanelTop, LogOut, Mail,
+  MessageSquare, Package, PenLine, Pencil, Plus, Quote, RefreshCw, RotateCcw,
+  SlidersHorizontal, Sparkle, Sparkles, Sprout, Tag, ThumbsDown, ThumbsUp,
+  Upload, X,
 } from 'lucide-react'
 
 const ICONS = {
-  AlignLeft, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check, ChevronRight,
-  ChevronsUpDown, CodeXml, Copy, Download, FileText, GitBranch, GripVertical,
-  ImagePlus, LayoutGrid, LayoutPanelTop, LogOut, Mail, MessageSquare, Package,
-  PenLine, Pencil, Plus, Quote, RefreshCw, RotateCcw, SlidersHorizontal, Sparkle,
-  Sparkles, Sprout, Tag, ThumbsDown, ThumbsUp, Upload, X,
+  AlertCircle, AlignLeft, ArrowLeft, ArrowRight, ArrowUp, BookOpen, Check,
+  ChevronRight, ChevronsUpDown, CodeXml, Copy, Download, FileText, GitBranch,
+  GripVertical, ImagePlus, LayoutGrid, LayoutPanelTop, LogOut, Mail,
+  MessageSquare, Package, PenLine, Pencil, Plus, Quote, RefreshCw, RotateCcw,
+  SlidersHorizontal, Sparkle, Sparkles, Sprout, Tag, ThumbsDown, ThumbsUp,
+  Upload, X,
 }
 
 export function Icon({ name, size = 20, stroke = 1.75, color = 'currentColor', style }) {

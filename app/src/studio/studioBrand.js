@@ -94,13 +94,20 @@ export function serializeProfile(p) {
   if (p.positioning) lines.push(`POSITIONING: ${p.positioning}`)
   if (p.audience) lines.push(`AUDIENCE: ${p.audience}`)
   if (p.founder) lines.push(`FOUNDER: ${p.founder}`)
+  if (p.confidence) lines.push(`CONFIDENCE: ${p.confidence}`)
   if (Array.isArray(p.proof_points) && p.proof_points.length) lines.push(`PROOF: ${p.proof_points.join(' | ')}`)
   if (Array.isArray(p.voice_rules) && p.voice_rules.length) {
     lines.push('VOICE RULES:')
     p.voice_rules.forEach((r, i) => {
       const rule = (r.rule || '').trim()
       const why = (r.why || '').trim()
-      lines.push((i + 1) + '. ' + rule + (why ? ' :: ' + why : ''))
+      const evidence = (r.evidence || '').trim()
+      // "<n>. rule :: why :: evidence" — keep why's slot whenever evidence
+      // exists so parseProfile can map the three segments back by position.
+      let line = (i + 1) + '. ' + rule
+      if (why || evidence) line += ' :: ' + why
+      if (evidence) line += ' :: ' + evidence
+      lines.push(line)
     })
   }
   return lines.join('\n')
@@ -116,14 +123,18 @@ export function parseProfile(notes) {
     notes.slice(rulesIdx).split(/\n/).forEach((ln) => {
       const m = ln.match(/^\s*\d+\.\s*(.+)$/)
       if (!m) return
-      const [n, ...d] = m[1].split(' :: ')
-      rules.push({ n: n.trim(), d: d.join(' :: ').trim() })
+      const parts = m[1].split(' :: ')
+      const n = (parts[0] || '').trim()
+      const d = (parts[1] || '').trim()
+      const evidence = parts.slice(2).join(' :: ').trim()
+      rules.push({ n, d, evidence })
     })
   }
   return {
     positioning: grab(/^POSITIONING:\s*(.+)$/m),
     audience: grab(/^AUDIENCE:\s*(.+)$/m),
     founder: grab(/^FOUNDER:\s*(.+)$/m),
+    confidence: grab(/^CONFIDENCE:\s*(.+)$/m),
     proof: proofLine ? proofLine.split('|').map((s) => s.trim()).filter(Boolean) : [],
     voiceRules: rules,
   }
@@ -154,6 +165,7 @@ export function buildStudioBrand(brand, products) {
     positioning: (prof && prof.positioning) || brand.positioning || `On-brand marketing emails for ${brand.name || 'your store'}.`,
     audience: (prof && prof.audience) || brand.audience || 'Your subscribers and recent customers.',
     proof: (prof && prof.proof) || [],
+    confidence: (prof && prof.confidence) || '',
     shopUrl: url ? `${url}/shop` : '',
     logoUrl: brand.logo_url || null,
     palette: (brand.palette && brand.palette.length ? brand.palette : [accent, accent2, paper, ink]).slice(0, 6),
@@ -172,17 +184,23 @@ export function buildStudioBrand(brand, products) {
 }
 
 // The brand-specific context block sent to the AI (prefixes the system prompt's work).
+// Carries the Step-1 research signals — proof points, per-rule evidence quotes,
+// and research confidence — so generation stays grounded in the brand's own words.
 export function buildBrandBlock(sb) {
   const prod = sb.products.length
     ? sb.products.map((p) => `${p.title}${p.price ? ` (${p.price})` : ''}`).join('; ')
     : '(no product list provided)'
-  const voice = sb.voiceRules.map((r, i) => `${i + 1}. ${r.n}${r.d ? ': ' + r.d : ''}`).join('\n')
+  const voice = sb.voiceRules.map((r, i) => {
+    const ev = (r.evidence || '').trim()
+    return `${i + 1}. ${r.n}${r.d ? ': ' + r.d : ''}${ev ? ` [evidence: "${ev}"]` : ''}`
+  }).join('\n')
+  const proof = (sb.proof && sb.proof.length) ? sb.proof.join('; ') : ''
   return `Brand: ${sb.name}${sb.url ? ` (${sb.url})` : ''}${sb.founder ? `, founded by ${sb.founder}` : ''}${sb.city ? ` in ${sb.city}` : ''}.
 Positioning: ${sb.positioning}
-Audience: ${sb.audience}
+Audience: ${sb.audience}${proof ? `\nProof points (verified facts from the brand's own site; the only proof you may cite): ${proof}` : ''}
 Products: ${prod}.
 Shop link: ${sb.shopUrl || sb.url}
-Voice rules:
+Voice rules${sb.confidence ? ` (research confidence: ${sb.confidence})` : ''}:
 ${voice}`
 }
 

@@ -55,7 +55,7 @@ function parseJSON(raw) {
 }
 
 async function draftBrief(body) {
-  const { pillar, type, ask, offer } = body
+  const { pillar, type, ask, offer, requiredLanguage, clientNotes } = body
   const job = PILLAR_JOBS[pillar] || PILLAR_JOBS.educational
   const user = `${brandBlockOf(body)}
 
@@ -64,10 +64,17 @@ Write a campaign BRIEF (guardrails for a copywriter, not creative direction). St
 Content pillar: ${pillar} - ${job}
 Campaign type: ${type}
 What this send is about: "${ask || '(not specified)'}"
-Offer: "${offer || '(none)'}"
+Offer the user named: "${offer || '(none)'}"${requiredLanguage ? `\nRequired language (must appear word-for-word in the copy): "${requiredLanguage}"` : ''}${clientNotes ? `\nClient specifications / hard constraints: "${clientNotes}"` : ''}
 
-Return JSON: {"title":"<short campaign title, sentence case, under 8 words>","direction":"<one sentence stating the single goal of this send>","productFocus":"<the product or collection this is about, real products from the brand only>","offer":"<discount/code/expiration, or 'No offer'>"}`
-  return parseJSON(await complete({ user, maxTokens: 400 }))
+ANTI-FABRICATION (hard rule): never invent a Product Focus, Offer, or Link.
+- Product Focus must be grounded in the brand's product list or the user's ask above. Never default to the first product in the catalog. If you cannot ground it, output exactly "missing info: <what is missing>".
+- Offer: use only what the user named. If the user named no offer, output "No offer". Never invent a discount, code, percentage, or deadline.
+- Links: use only the brand's real shop link. If none is available, output "No required links". Never invent a URL.
+
+SELF-CHECK before answering: for Product Focus and Campaign Direction, privately name three concrete specifics grounded in the brand context or the ask. If you cannot name three, mark that field "missing info: <what is missing>" instead of padding it with generic language. Do not print the specifics; output only the JSON fields.
+
+Return JSON: {"title":"<short campaign title, sentence case, under 8 words, or 'missing info: campaign title'>","direction":"<one sentence stating the single goal of this send>","productFocus":"<the product or collection this is about, real products only, or 'missing info: ...'>","offer":"<discount/code/expiration, or 'No offer', or 'missing info: ...'>"}`
+  return parseJSON(await complete({ user, maxTokens: 500 }))
 }
 
 async function generateCopy(body) {
@@ -81,7 +88,7 @@ Title: ${brief.title}
 Direction: ${brief.direction}
 Product focus: ${brief.productFocus}
 Offer: ${brief.offer}
-Type: ${brief.type}
+Type: ${brief.type}${brief.requiredLanguage ? `\nRequired language (use these phrases word-for-word): "${brief.requiredLanguage}"` : ''}${brief.clientNotes ? `\nClient specifications / hard constraints: "${brief.clientNotes}"` : ''}
 `
   if (brief.type === 'DESIGNED') {
     user += `Sections (in order): ${brief.structure.join(', ')}

@@ -24,29 +24,37 @@ async function callStudio(action, payload) {
 
 function briefFallback(sb, { type, pillar, ask, offer }) {
   const p = pillarOf(pillar)
-  const firstProduct = sb.products[0]?.title || 'your lineup'
+  const askText = (ask || '').trim()
+  // Anti-fabrication: ground Product Focus in the user's ask or a named product.
+  // Never default to the first product in the catalog — flag it as missing instead.
+  const named = askText && sb.products.find((x) => askText.toLowerCase().includes(x.title.toLowerCase().split(',')[0]))
+  const productFocus = named ? named.title : (askText || 'missing info: which product, collection, or content this campaign features')
   return {
-    title: ask ? ask.replace(/^(a |an )/i, '').replace(/\.$/, '').slice(0, 60) : `${p.label} send`,
+    title: askText ? askText.replace(/^(a |an )/i, '').replace(/\.$/, '').slice(0, 60) : `${p.label} send`,
     direction: type === 'SMS'
-      ? `Tell engaged subscribers about ${ask || p.label.toLowerCase()} in one direct text.`
-      : `${p.job.toLowerCase().replace('the reader', 'Get the reader to').replace('the campaign sells', 'Sell')} around ${ask || p.label.toLowerCase()}.`,
-    productFocus: ask && sb.products.some((x) => ask.toLowerCase().includes(x.title.toLowerCase().split(',')[0])) ? ask : firstProduct,
+      ? `Tell engaged subscribers about ${askText || p.label.toLowerCase()} in one direct text.`
+      : `${p.job.toLowerCase().replace('the reader', 'Get the reader to').replace('the campaign sells', 'Sell')} around ${askText || p.label.toLowerCase()}.`,
+    productFocus,
     offer: (offer || '').trim() || 'No offer',
   }
 }
 
-export async function draftBrief(sb, { type, pillar, ask, offer }) {
+export async function draftBrief(sb, { type, pillar, ask, offer, requiredLanguage, clientNotes }) {
   const fallback = briefFallback(sb, { type, pillar, ask, offer })
-  const gen = await callStudio('brief', { type, pillar, ask, offer, brandBlock: buildBrandBlock(sb) })
+  const gen = await callStudio('brief', { type, pillar, ask, offer, requiredLanguage, clientNotes, brandBlock: buildBrandBlock(sb) })
   const b = gen || fallback
   const p = pillarOf(pillar)
   const structure = type === 'DESIGNED' ? p.designed : type === 'TEXT_BASED' ? [p.framework] : [p.sms]
+  // Links are grounded in the brand's real shop link; never invent one.
+  const links = sb.shopUrl || sb.url || 'No required links'
   return {
     title: b.title || fallback.title,
     direction: b.direction || fallback.direction,
     productFocus: b.productFocus || fallback.productFocus,
     offer: b.offer || fallback.offer,
-    links: sb.shopUrl || sb.url,
+    links,
+    requiredLanguage: (requiredLanguage || '').trim() || null,
+    clientNotes: (clientNotes || '').trim() || null,
     structure, type, pillar,
   }
 }

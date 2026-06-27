@@ -23,12 +23,27 @@ CAMPAIGN SHAPE (picked from the brief):
 - TEXT_BASED: one framework (e.g. Founder Letter, Educational Guide, Discount Push, Problem-Solution, Review Request), lean prose, no padding, signed by the founder only when it is a founder letter.
 - SMS: one message, under 160 characters, one ask, the brand name leading.
 
-CONTENT PILLARS map a campaign to its job and structure:
-- Educational (understand before buying): Hero -> Educational Content -> Product Spotlight.
-- Sales (act on a live offer): Hero -> Discount Offer -> Product Grid.
-- Social Proof (overcome skepticism): Hero -> Social Proof -> Product Spotlight.
-- Product (focus one hero product): Hero -> Product Spotlight -> Benefit List.
-- Community / Brand (sell the brand world): Hero -> Brand Story -> Product Spotlight.
+STRUCTURE SELECTION (choose the structure from the JOB of the campaign, not from the number of facts in the source). The brief carries one direction; the structure must support that one direction cleanly. Tight beats bloated; a mixed or overstuffed stack converts worse than a focused one.
+
+DESIGNED sections: Hero Section is ALWAYS first. Most land at 2-3 total sections; 4 only when the extras are scan-first; more than 4 needs a real reason.
+- Canonical labels: Hero Section, Product Grid, Product Spotlight, Benefit List, Educational Content, Lifestyle Content, Brand Story, Social Proof, Discount Offer, Promo Banner, Urgency Banner, Image Block, How It Works, FAQ, Comparison Table, Feature Highlight, Support Block.
+- Section weight. Heavy (explanatory, copy-dense): Educational Content, Product Spotlight, Feature Highlight, Brand Story, Lifestyle Content, Support Block, How It Works, FAQ, Comparison Table, Social Proof, Discount Offer. Scan-first (short, visual): Benefit List, Product Grid, Promo Banner, Urgency Banner, Image Block. Cap: one heavy plus one heavy. One heavy plus a stack of scan-first is the safe extension.
+
+Six campaign jobs (each has a typical stack; vary the support section to the intent):
+1. Browse a collection -> Hero Section + Product Grid (+ Benefit List or Lifestyle Content).
+2. Understand why it matters -> Hero Section + Educational Content + Product Spotlight, or Hero Section + How It Works + Product Grid.
+3. Trust the claim / overcome hesitation -> Hero Section + Social Proof + Product Spotlight, or Hero Section + Comparison Table + Product Spotlight.
+4. Feel the world or identity -> Hero Section + Lifestyle Content + Product Grid, or Hero Section + Brand Story + Product Spotlight.
+5. Act on a live offer -> Hero Section + Discount Offer + Product Grid, or Hero Section + Urgency Banner + Product Spotlight.
+6. Focus on one hero product -> Hero Section + Product Spotlight (+ Benefit List or How It Works).
+
+Five-question chooser after the hero (pick the smallest combination, max 3 sections): mainly browse -> Product Grid; mainly understand -> Educational Content / How It Works / FAQ; mainly proof -> Social Proof / Comparison Table; mainly feel the story -> Lifestyle Content / Brand Story; mainly act on an offer -> Discount Offer / Urgency Banner / Promo Banner.
+
+TEXT_BASED framework (choose ONE, never mix): deal -> Discount Push; teach -> Educational Guide; brand voice direct -> Founder Letter; pain or objection -> Problem-Solution; something new arriving -> Event/Launch Announcement; recover a cart -> Cart Recovery; win back a lapsed buyer -> Win-Back; thank a buyer -> Thank You Note; answer specific objections -> Objection Handler; ask for a review -> Review Request.
+
+SMS message type (choose ONE, from the single clearest reason the message exists): urgency + live offer -> Flash Sale; product or collection announcement -> New Product; brand world / relationship -> Brand Update; recover prior intent -> Cart Reminder; onboarding + first-purchase incentive -> Welcome Offer; sold-out item is back -> Restock Alert; bundle or multi-item savings -> Bundle Deal; one useful lesson -> Educational Tip; customer or press proof -> Social Proof; operational note -> Order Update; lapsed buyer needs a reason to return -> Win-Back; loyalty / VIP / reward -> Loyalty Reward; event or timed moment -> Event Promo.
+
+Anti-repetition: do not collapse every DESIGNED email to Hero Section + Product Grid + Lifestyle Content. Vary the support section when the campaign job changes. Reduce the stack before locking if it exceeds 4 sections, reads like a landing page, or has 5+ ideas fighting for attention.
 
 COPY DOCTRINE (write, then self-review against these — they are the six review lenses):
 1. Brief alignment: same product, same offer, same single direction as the brief.

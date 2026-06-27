@@ -46,6 +46,27 @@ export const TYPES = [
   { value: 'SMS', label: 'SMS', icon: 'MessageSquare', desc: 'One message, under 160 characters, one ask.' },
 ]
 
+/* ------ canonical structure vocabulary (brief-structure-selection.md) -------
+   The brief's structure is SELECTED from the campaign job by the AI, not locked
+   to a fixed stack. These are the labels the writer chooses from and the labels
+   the user can swap/reorder in the brief panel before locking. */
+export const CANONICAL_SECTIONS = [
+  'Hero Section', 'Product Grid', 'Product Spotlight', 'Benefit List',
+  'Educational Content', 'Lifestyle Content', 'Brand Story', 'Social Proof',
+  'Discount Offer', 'Promo Banner', 'Urgency Banner', 'Image Block',
+  'How It Works', 'FAQ', 'Comparison Table', 'Feature Highlight', 'Support Block',
+]
+export const FRAMEWORKS = [
+  'Discount Push', 'Educational Guide', 'Founder Letter', 'Problem-Solution',
+  'Event/Launch Announcement', 'Cart Recovery', 'Win-Back', 'Thank You Note',
+  'Objection Handler', 'Review Request',
+]
+export const MESSAGE_TYPES = [
+  'Flash Sale', 'New Product', 'Brand Update', 'Cart Reminder', 'Welcome Offer',
+  'Restock Alert', 'Bundle Deal', 'Educational Tip', 'Social Proof',
+  'Order Update', 'Win-Back', 'Loyalty Reward', 'Event Promo',
+]
+
 export const pillarOf = (k) => PILLARS.find((p) => p.key === k) || PILLARS[0]
 
 /* ------ campaigns shown on the home screen (demo seed) ---------------- */

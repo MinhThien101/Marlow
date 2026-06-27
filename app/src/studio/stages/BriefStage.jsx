@@ -2,7 +2,7 @@
 // say what the send is about, and Marlow drafts a brief (guardrails, not copy).
 import React from 'react'
 import { Button, Input, Textarea, Spinner, Icon } from '../../ui/primitives.jsx'
-import { Eyebrow, Panel, PILLARS, TYPES, pillarOf } from '../data.jsx'
+import { Eyebrow, Panel, PILLARS, TYPES, pillarOf, CANONICAL_SECTIONS, FRAMEWORKS, MESSAGE_TYPES } from '../data.jsx'
 import { draftBrief } from '../ai.js'
 import { useStudioBrand } from '../brandContext.jsx'
 
@@ -49,6 +49,72 @@ const FieldValue = ({ children }) => {
     <span style={{ display: 'inline-flex', alignItems: 'center', gap: 7, color: 'var(--text-subtle)', fontStyle: 'italic' }}>
       <Icon name="AlertCircle" size={14} color="var(--ember-600)" />{children}
     </span>
+  )
+}
+
+const selectStyle = {
+  width: '100%', padding: '9px 11px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-default)',
+  background: 'var(--surface-card)', color: 'var(--text-body)', fontFamily: 'var(--font-sans)', fontSize: 13.5, cursor: 'pointer',
+}
+const rowBtn = (disabled) => ({
+  width: 28, height: 28, flex: 'none', display: 'flex', alignItems: 'center', justifyContent: 'center',
+  borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-subtle)', background: 'var(--surface-card)',
+  color: 'var(--text-muted)', cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.4 : 1,
+})
+
+// The AI selects the section stack from the campaign job; the founder can edit,
+// reorder, add, or remove sections before locking the brief. Hero Section is
+// pinned first and the stack is capped at 4 (brief-structure-selection.md).
+function StructureEditor({ type, structure, onChange }) {
+  if (type !== 'DESIGNED') {
+    const options = type === 'TEXT_BASED' ? FRAMEWORKS : MESSAGE_TYPES
+    const cur = structure[0] || options[0]
+    const opts = options.includes(cur) ? options : [cur, ...options]
+    return (
+      <select value={cur} onChange={(e) => onChange([e.target.value])} style={{ ...selectStyle, maxWidth: 320 }}>
+        {opts.map((o) => <option key={o} value={o}>{o}</option>)}
+      </select>
+    )
+  }
+  const move = (i, dir) => {
+    const j = i + dir
+    if (j < 1 || j >= structure.length) return // Hero Section stays pinned at index 0
+    const next = structure.slice()
+    ;[next[i], next[j]] = [next[j], next[i]]
+    onChange(next)
+  }
+  const remove = (i) => { if (i === 0) return; onChange(structure.filter((_, k) => k !== i)) }
+  const add = (label) => { if (!label || structure.length >= 4 || structure.includes(label)) return; onChange([...structure, label]) }
+  const available = CANONICAL_SECTIONS.filter((s) => s !== 'Hero Section' && !structure.includes(s))
+  return (
+    <div>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
+        {structure.map((s, i) => (
+          <div key={s + i} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '7px 9px', borderRadius: 'var(--radius-sm)', background: 'var(--surface-sunken)', border: '1px solid var(--border-subtle)' }}>
+            <Icon name="GripVertical" size={14} color="var(--text-subtle)" />
+            <span style={{ flex: 1, fontSize: 13, color: 'var(--text-strong)' }}>{s}</span>
+            {i === 0 ? (
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: '0.05em', textTransform: 'uppercase', color: 'var(--text-subtle)', padding: '2px 7px', borderRadius: 'var(--radius-pill)', border: '1px solid var(--border-subtle)' }}>Pinned</span>
+            ) : (
+              <span style={{ display: 'flex', gap: 4 }}>
+                <button title="Move up" onClick={() => move(i, -1)} disabled={i <= 1} style={rowBtn(i <= 1)}><Icon name="ArrowUp" size={14} /></button>
+                <button title="Move down" onClick={() => move(i, 1)} disabled={i >= structure.length - 1} style={rowBtn(i >= structure.length - 1)}><Icon name="ArrowDown" size={14} /></button>
+                <button title="Remove" onClick={() => remove(i)} style={rowBtn(false)}><Icon name="X" size={14} /></button>
+              </span>
+            )}
+          </div>
+        ))}
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginTop: 10 }}>
+        {structure.length < 4 && available.length > 0 && (
+          <select value="" onChange={(e) => add(e.target.value)} style={{ ...selectStyle, maxWidth: 260 }}>
+            <option value="" disabled>+ Add a section…</option>
+            {available.map((o) => <option key={o} value={o}>{o}</option>)}
+          </select>
+        )}
+        <span style={{ fontSize: 11.5, color: 'var(--text-subtle)' }}>Hero leads · 2-4 sections · {structure.length}/4</span>
+      </div>
+    </div>
   )
 }
 
@@ -115,7 +181,7 @@ export default function BriefStage({ campaign, setCampaign, onBack, onNext }) {
         {p && (
           <div style={{ marginTop: 14, padding: '11px 14px', borderRadius: 'var(--radius-md)', background: 'var(--surface-sunken)', display: 'flex', alignItems: 'center', gap: 10, fontSize: 12.5, color: 'var(--text-muted)' }}>
             <Icon name="GitBranch" size={15} color="var(--text-subtle)" />
-            <span><b style={{ color: 'var(--text-strong)' }}>Structure</b> · {type === 'DESIGNED' ? structure.join(' → ') : type === 'TEXT_BASED' ? `${p.framework} framework` : `${p.sms} message`}</span>
+            <span><b style={{ color: 'var(--text-strong)' }}>Starting point</b> · {type === 'DESIGNED' ? structure.join(' → ') : type === 'TEXT_BASED' ? `${p.framework} framework` : `${p.sms} message`} <span style={{ color: 'var(--text-subtle)' }}>· Marlow selects the final structure from the campaign when you draft</span></span>
           </div>
         )}
       </Panel>
@@ -135,7 +201,7 @@ export default function BriefStage({ campaign, setCampaign, onBack, onNext }) {
         </div>
         <div style={{ marginTop: 12 }}>
           <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-strong)', marginBottom: 6 }}>Client specs / notes <span style={{ color: 'var(--text-subtle)', fontWeight: 400 }}>· optional</span></div>
-          <Textarea value={clientNotes} onChange={(e) => setClientNotes(e.target.value)} rows={2} placeholder="Hard constraints to honor — e.g. no discounts this month, link to the gift guide, mention the new size" />
+          <Textarea value={clientNotes} onChange={(e) => setClientNotes(e.target.value)} rows={2} placeholder="Hard constraints to honor, e.g. no discounts this month, link to the gift guide, mention the new size" />
         </div>
         <div style={{ marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10 }}>
           {!p ? <span style={{ fontSize: 12, color: 'var(--text-subtle)' }}>Pick a pillar to draft the brief.</span> : <span />}
@@ -158,9 +224,7 @@ export default function BriefStage({ campaign, setCampaign, onBack, onNext }) {
           {brief.clientNotes && <BriefField label="Client Specs / Notes">{brief.clientNotes}</BriefField>}
           <BriefField label="Links" mono><FieldValue>{brief.links}</FieldValue></BriefField>
           <BriefField label={type === 'DESIGNED' ? 'Email Sections' : type === 'TEXT_BASED' ? 'Framework' : 'Message Type'}>
-            {type === 'DESIGNED'
-              ? <ol style={{ margin: 0, paddingLeft: 18 }}>{structure.map((s) => <li key={s} style={{ marginBottom: 2 }}>{s}</li>)}</ol>
-              : structure[0]}
+            <StructureEditor type={type} structure={brief.structure || []} onChange={(next) => setBrief((b) => ({ ...b, structure: next }))} />
           </BriefField>
         </Panel>
       )}
@@ -182,7 +246,7 @@ export default function BriefStage({ campaign, setCampaign, onBack, onNext }) {
             ))}
           </ul>
           <Button variant="secondary" onClick={() => setAccepted(true)} disabled={accepted} iconLeft={<Icon name={accepted ? 'Check' : 'PenLine'} size={15} />}>
-            {accepted ? 'Accepted — writing with gaps noted' : 'Accept and write anyway'}
+            {accepted ? 'Accepted, writing with gaps noted' : 'Accept and write anyway'}
           </Button>
         </Panel>
       )}

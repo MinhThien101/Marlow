@@ -39,12 +39,30 @@ function briefFallback(sb, { type, pillar, ask, offer }) {
   }
 }
 
+// Clean the AI-selected stack into a safe, lockable structure. DESIGNED leads
+// with Hero Section and stays within the 2-4 cap; TEXT_BASED/SMS are a single
+// label. Falls back to the offline pillar stack when the selection is unusable.
+function normalizeStructure(type, selected, fallback) {
+  const clean = Array.isArray(selected)
+    ? selected.filter((s) => typeof s === 'string' && s.trim()).map((s) => s.trim())
+    : []
+  if (type !== 'DESIGNED') return [clean[0] || fallback[0]]
+  let stack = clean.length ? clean : fallback.slice()
+  if (stack[0] !== 'Hero Section') stack = ['Hero Section', ...stack.filter((s) => s !== 'Hero Section')]
+  // Dedupe while preserving order, then enforce the 4-section cap.
+  stack = stack.filter((s, i) => stack.indexOf(s) === i).slice(0, 4)
+  return stack
+}
+
 export async function draftBrief(sb, { type, pillar, ask, offer, requiredLanguage, clientNotes }) {
   const fallback = briefFallback(sb, { type, pillar, ask, offer })
   const gen = await callStudio('brief', { type, pillar, ask, offer, requiredLanguage, clientNotes, brandBlock: buildBrandBlock(sb) })
   const b = gen || fallback
   const p = pillarOf(pillar)
-  const structure = type === 'DESIGNED' ? p.designed : type === 'TEXT_BASED' ? [p.framework] : [p.sms]
+  // Structure is SELECTED by the brief action from the campaign job. The data.jsx
+  // pillar stacks are only the offline fallback (plain `vite dev`, no /api).
+  const fallbackStructure = type === 'DESIGNED' ? p.designed : type === 'TEXT_BASED' ? [p.framework] : [p.sms]
+  const structure = normalizeStructure(type, gen && gen.structure, fallbackStructure)
   // Links are grounded in the brand's real shop link; never invent one.
   const links = sb.shopUrl || sb.url || 'No required links'
   return {

@@ -38,14 +38,15 @@ function brandBlockOf(body) {
     : DEFAULT_BRAND_BLOCK
 }
 
-async function complete({ user, maxTokens }) {
+async function complete({ user, maxTokens, model = 'claude-opus-4-8' }) {
   const msg = await client.messages.create({
-    model: 'claude-haiku-4-5-20251001',
+    model,
     max_tokens: maxTokens,
     system: [{ type: 'text', text: STUDIO_SYSTEM_PROMPT, cache_control: { type: 'ephemeral' } }],
     messages: [{ role: 'user', content: user }],
   })
-  return msg.content[0]?.text || ''
+  // Find the text block (robust to a leading thinking block on stronger models).
+  return msg.content.find((b) => b.type === 'text')?.text || ''
 }
 
 function parseJSON(raw) {
@@ -57,24 +58,39 @@ function parseJSON(raw) {
 async function draftBrief(body) {
   const { pillar, type, ask, offer, requiredLanguage, clientNotes } = body
   const job = PILLAR_JOBS[pillar] || PILLAR_JOBS.educational
+
+  // Structure is the load-bearing decision: SELECT it from the campaign job using
+  // STRUCTURE SELECTION (not a fixed pillar stack), and return it.
+  const structureAsk = type === 'DESIGNED'
+    ? `SELECT THE SECTION STACK from the campaign job using STRUCTURE SELECTION. Hero Section is always first. Pick the smallest stack that supports the one direction: 2-3 sections is typical, a 4th only if it is scan-first, never more than 4. Respect section weight (one heavy plus one heavy is the cap; one heavy plus scan-first is the safe extension). Use only the canonical section labels.`
+    : type === 'TEXT_BASED'
+    ? `SELECT ONE TEXT_BASED FRAMEWORK from the framework chooser that matches the single direction. Never mix frameworks. Use a canonical framework label.`
+    : `SELECT ONE SMS MESSAGE TYPE from the message-type chooser, from the single clearest reason this message exists. Use a canonical message-type label.`
+
+  const shapeJSON = type === 'DESIGNED'
+    ? `"structure":["Hero Section","<canonical section label>", ... 2 to 4 labels in order]`
+    : `"structure":["<one canonical ${type === 'TEXT_BASED' ? 'framework' : 'message type'} label>"]`
+
   const user = `${brandBlockOf(body)}
 
-Write a campaign BRIEF (guardrails for a copywriter, not creative direction). State the single goal, product focus, and offer. No voice notes, no sample copy.
+Write a campaign BRIEF (guardrails for a copywriter, not creative direction). State the single goal, product focus, and offer, and SELECT the structure. No voice notes, no sample copy.
 
-Content pillar: ${pillar} - ${job}
+Content pillar (a prior, not a lock): ${pillar} - ${job}
 Campaign type: ${type}
 What this send is about: "${ask || '(not specified)'}"
 Offer the user named: "${offer || '(none)'}"${requiredLanguage ? `\nRequired language (must appear word-for-word in the copy): "${requiredLanguage}"` : ''}${clientNotes ? `\nClient specifications / hard constraints: "${clientNotes}"` : ''}
+
+${structureAsk}
 
 ANTI-FABRICATION (hard rule): never invent a Product Focus, Offer, or Link.
 - Product Focus must be grounded in the brand's product list or the user's ask above. Never default to the first product in the catalog. If you cannot ground it, output exactly "missing info: <what is missing>".
 - Offer: use only what the user named. If the user named no offer, output "No offer". Never invent a discount, code, percentage, or deadline.
 - Links: use only the brand's real shop link. If none is available, output "No required links". Never invent a URL.
 
-SELF-CHECK before answering: for Product Focus and Campaign Direction, privately name three concrete specifics grounded in the brand context or the ask. If you cannot name three, mark that field "missing info: <what is missing>" instead of padding it with generic language. Do not print the specifics; output only the JSON fields.
+SELF-CHECK before answering: for Product Focus and Campaign Direction, privately name three concrete specifics grounded in the brand context or the ask. If you cannot name three, mark that field "missing info: <what is missing>" instead of padding it with generic language. For the structure, confirm it supports ONE direction and is not overbuilt. Do not print the reasoning; output only the JSON.
 
-Return JSON: {"title":"<short campaign title, sentence case, under 8 words, or 'missing info: campaign title'>","direction":"<one sentence stating the single goal of this send>","productFocus":"<the product or collection this is about, real products only, or 'missing info: ...'>","offer":"<discount/code/expiration, or 'No offer', or 'missing info: ...'>"}`
-  return parseJSON(await complete({ user, maxTokens: 500 }))
+Return JSON: {"title":"<short campaign title, sentence case, under 8 words, or 'missing info: campaign title'>","direction":"<one sentence stating the single goal of this send>","productFocus":"<the product or collection this is about, real products only, or 'missing info: ...'>","offer":"<discount/code/expiration, or 'No offer', or 'missing info: ...'>",${shapeJSON}}`
+  return parseJSON(await complete({ user, maxTokens: 900, model: 'claude-opus-4-8' }))
 }
 
 async function generateCopy(body) {

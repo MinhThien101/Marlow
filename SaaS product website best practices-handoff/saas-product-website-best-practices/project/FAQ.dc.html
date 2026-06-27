@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/colors.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/typography.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/effects.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/styles.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--surface-page); color: var(--text-body); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--ember-100); }
+  details summary { list-style: none; cursor: pointer; }
+  details summary::-webkit-details-marker { display: none; }
+  .faq-chev { transition: transform 200ms cubic-bezier(0.22,1,0.36,1); }
+  details[open] .faq-chev { transform: rotate(180deg); }
+  details[open] .faq-q { color: var(--text-strong); }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--surface-page);overflow-x:hidden;">
+
+  <!-- ============================ NAV ============================ -->
+  <header style="position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--surface-page) 86%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);">
+    <nav style="max-width:1140px;margin:0 auto;height:70px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+      <a href="Marlow%20Website.dc.html" style="display:flex;align-items:center;gap:10px;">
+        <img src="assets/logo-mark.svg" width="30" height="30" alt="Marlow" />
+        <span style="font-family:var(--font-display);font-size:23px;font-weight:500;letter-spacing:-0.01em;color:var(--text-strong);">Marlow</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:30px;">
+        <a href="Marlow%20Website.dc.html#how" style="font-size:14.5px;font-weight:500;color:var(--text-muted);" style-hover="color:var(--text-strong);">How it works</a>
+        <a href="Marlow%20Website.dc.html#samples" style="font-size:14.5px;font-weight:500;color:var(--text-muted);" style-hover="color:var(--text-strong);">Examples</a>
+        <a href="Pricing.dc.html" style="font-size:14.5px;font-weight:500;color:var(--text-muted);" style-hover="color:var(--text-strong);">Pricing</a>
+        <a href="FAQ.dc.html" style="font-size:14.5px;font-weight:600;color:var(--text-strong);">FAQ</a>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <a href="Marlow%20App.dc.html" style="font-size:14.5px;font-weight:600;color:var(--text-strong);" style-hover="color:var(--accent-text);">Sign in</a>
+        <a href="Pricing.dc.html" style="display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:var(--radius-md);background:var(--ember-500);color:var(--text-on-ember);font-weight:600;font-size:14.5px;box-shadow:var(--shadow-xs);transition:background 120ms,box-shadow 120ms;" style-hover="background:var(--ember-600);box-shadow:var(--shadow-ember);">Join the beta</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ============================ HEADER ============================ -->
+  <section style="max-width:1140px;margin:0 auto;padding:84px 24px 40px;text-align:center;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-text);margin-bottom:16px;">Help &amp; FAQ</div>
+    <h1 style="font-family:var(--font-display);font-size:54px;font-weight:500;line-height:1.04;letter-spacing:-0.025em;color:var(--text-strong);margin:0 auto 20px;max-width:640px;text-wrap:balance;">Questions, answered.</h1>
+    <p style="font-size:18px;line-height:1.55;color:var(--text-muted);margin:0 auto;max-width:500px;">Everything about connecting your brand, generating emails, and exporting to your ESP.</p>
+  </section>
+
+  <!-- ============================ FAQ GROUPS ============================ -->
+  <section style="max-width:820px;margin:0 auto;padding:24px 24px 40px;">
+    <sc-for list="{{ groups }}" as="g" hint-placeholder-count="4">
+      <div style="margin-bottom:48px;">
+        <div style="display:flex;align-items:center;gap:12px;margin-bottom:8px;padding-bottom:14px;border-bottom:1px solid var(--border-default);">
+          <span style="font-family:var(--font-mono);font-size:11px;color:var(--text-subtle);">{{ g.num }}</span>
+          <h2 style="font-family:var(--font-display);font-size:24px;font-weight:500;letter-spacing:-0.01em;color:var(--text-strong);margin:0;">{{ g.title }}</h2>
+        </div>
+        <sc-for list="{{ g.items }}" as="f" hint-placeholder-count="3">
+          <details style="border-bottom:1px solid var(--border-subtle);">
+            <summary style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:20px 4px;">
+              <span class="faq-q" style="font-size:16.5px;font-weight:600;color:var(--text-body);">{{ f.q }}</span>
+              <svg class="faq-chev" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--text-subtle)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;"><polyline points="6 9 12 15 18 9"></polyline></svg>
+            </summary>
+            <div style="padding:0 4px 22px;max-width:680px;">
+              <p style="font-size:15px;line-height:1.62;color:var(--text-muted);margin:0;">{{ f.a }}</p>
+            </div>
+          </details>
+        </sc-for>
+      </div>
+    </sc-for>
+  </section>
+
+  <!-- ============================ STILL STUCK ============================ -->
+  <section style="max-width:820px;margin:0 auto;padding:0 24px 84px;">
+    <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-xl);background:var(--surface-card);box-shadow:var(--shadow-sm);padding:40px;text-align:center;">
+      <img src="assets/logo-mark.svg" width="36" height="36" alt="" style="margin-bottom:18px;" />
+      <h2 style="font-family:var(--font-display);font-size:26px;font-weight:500;letter-spacing:-0.01em;color:var(--text-strong);margin:0 0 10px;">Still have a question?</h2>
+      <p style="font-size:15.5px;line-height:1.55;color:var(--text-muted);margin:0 auto 26px;max-width:380px;">The fastest way to understand Marlow is to try it. Generate an email in the demo — no account needed.</p>
+      <div style="display:flex;align-items:center;justify-content:center;gap:12px;flex-wrap:wrap;">
+        <a href="Marlow%20App.dc.html" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;height:48px;padding:0 26px;border-radius:var(--radius-md);background:var(--ember-500);color:var(--text-on-ember);font-weight:600;font-size:15.5px;box-shadow:var(--shadow-xs);transition:background 120ms,box-shadow 120ms;" style-hover="background:var(--ember-600);box-shadow:var(--shadow-ember);">Try the demo</a>
+        <a href="#" style="display:inline-flex;align-items:center;justify-content:center;height:48px;padding:0 24px;border-radius:var(--radius-md);background:var(--surface-card);border:1px solid var(--border-default);color:var(--text-strong);font-weight:600;font-size:15.5px;" style-hover="background:var(--surface-hover);">Email support</a>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer style="border-top:1px solid var(--border-subtle);background:var(--surface-page);">
+    <div style="max-width:1140px;margin:0 auto;padding:48px 24px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <a href="Marlow%20Website.dc.html" style="display:flex;align-items:center;gap:10px;">
+        <img src="assets/logo-mark.svg" width="26" height="26" alt="" />
+        <span style="font-family:var(--font-display);font-size:19px;font-weight:500;color:var(--text-strong);">Marlow</span>
+      </a>
+      <span style="font-size:13px;color:var(--text-subtle);">© 2026 Marlow. Made for solo founders.</span>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1140,&quot;height&quot;:820}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      groups: [
+        {
+          num: '01', title: 'Getting started',
+          items: [
+            { q: 'Do I need to connect my Shopify account?', a: 'No login or OAuth required. You paste your store URL and Marlow reads your logo, colors, fonts, and a few products from your public site. You can also upload brand assets manually if you prefer.' },
+            { q: 'How long does setup take?', a: 'About a minute. You connect your brand once, confirm what Marlow pulled, and from then on you land straight on the generator.' },
+            { q: 'Which stores does Marlow work with?', a: 'It is built for Shopify stores in the $10k–$80k a month range, run by a single founder. Other platforms may work but are not the focus during beta.' },
+          ],
+        },
+        {
+          num: '02', title: 'Brand & content',
+          items: [
+            { q: 'Will the emails actually look on-brand?', a: 'That is the entire point. Marlow designs with your real brand — your colors, fonts, and products — not a generic template, so the result looks like you, not like AI.' },
+            { q: 'What kinds of emails can it make?', a: 'Campaign emails: promos, launches, holiday sends, and newsletters. You give a short prompt and pick a type, and Marlow writes the subject, preview text, and designed body together.' },
+            { q: 'Can I control the tone of voice?', a: 'Yes. Describe the tone in your prompt — warm, playful, minimal — and Marlow writes to match. You can regenerate any section until it sounds right.' },
+            { q: 'Does it write the copy too?', a: 'Copy and design arrive together. Marlow drafts the headline, body, and call to action, then lets you edit any line in place.' },
+          ],
+        },
+        {
+          num: '03', title: 'Editing & exporting',
+          items: [
+            { q: 'How much can I edit?', a: 'Light-touch by design: click any text to edit it, swap a featured product, or regenerate a single section. It keeps you fast instead of dropping you into a full email builder.' },
+            { q: 'How do I get the email into my ESP?', a: 'Export gives you clean, tested HTML. Copy it to your clipboard or download the file, then paste it into Klaviyo, Shopify Email, or Mailchimp and send.' },
+            { q: 'Does Marlow send the emails for me?', a: 'Not in beta. Marlow makes the email; your ESP handles sending, lists, and analytics. That keeps deliverability and your subscriber data where they already live.' },
+          ],
+        },
+        {
+          num: '04', title: 'Pricing & beta',
+          items: [
+            { q: 'What does it cost?', a: 'Plans run $29 to $99 a month flat. Above a $10 gig so you know it is real, far below a $2,500 agency retainer. See the pricing page for what each plan includes.' },
+            { q: 'What is included in the beta?', a: 'The full core flow: connect your brand, generate campaign emails, edit, and export. Automated flows, SMS, and ESP integrations are not part of the beta.' },
+            { q: 'Will beta pricing change?', a: 'Early founders keep their beta pricing as Marlow grows. You can cancel anytime — there is no contract.' },
+          ],
+        },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

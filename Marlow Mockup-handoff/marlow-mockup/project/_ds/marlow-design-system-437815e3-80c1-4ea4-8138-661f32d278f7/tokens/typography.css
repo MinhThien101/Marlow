@@ -1,0 +1,52 @@
+/* ============================================================
+   Marlow — Typography tokens
+   Newsreader (display serif) · Hanken Grotesk (UI) · JetBrains Mono
+   ============================================================ */
+:root {
+  /* Families */
+  --font-display: 'Newsreader', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Hanken Grotesk', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'SFMono-Regular', Menlo, monospace;
+
+  /* Weights */
+  --weight-regular: 400;
+  --weight-medium: 500;
+  --weight-semibold: 600;
+  --weight-bold: 700;
+  --weight-extrabold: 800;
+
+  /* Type scale (px) — fluid-ish editorial ramp */
+  --text-2xs: 11px;
+  --text-xs:  12px;
+  --text-sm:  13px;
+  --text-base: 15px;
+  --text-md:  16px;
+  --text-lg:  18px;
+  --text-xl:  21px;
+  --text-2xl: 26px;
+  --text-3xl: 32px;
+  --text-4xl: 42px;
+  --text-5xl: 56px;
+  --text-6xl: 72px;
+
+  /* Line heights */
+  --leading-tight: 1.08;
+  --leading-snug: 1.22;
+  --leading-normal: 1.5;
+  --leading-relaxed: 1.65;
+
+  /* Letter spacing */
+  --tracking-tight: -0.02em;
+  --tracking-snug: -0.011em;
+  --tracking-normal: 0em;
+  --tracking-wide: 0.02em;
+  --tracking-caps: 0.08em; /* for small uppercase eyebrows */
+
+  /* ---- Semantic text roles ---- */
+  /* Display — Newsreader, tight, for hero/headline moments */
+  --display-font: var(--font-display);
+  --display-weight: var(--weight-500, 500);
+
+  /* Body / UI — Hanken Grotesk */
+  --body-font: var(--font-sans);
+}

@@ -1,0 +1,437 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@500;600;700&family=Kalam:wght@300;400;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  *{box-sizing:border-box;}
+  html,body{margin:0;}
+</style>
+</helmet>
+
+<div style="background:#E7E3DB;min-height:100vh;padding:56px 64px 90px;font-family:Kalam,cursive;color:#2A2622;">
+
+  <!-- ============ PAGE HEADER ============ -->
+  <div style="max-width:1180px;margin:0 auto 18px;">
+    <div style="display:flex;align-items:center;gap:11px;margin-bottom:14px;">
+      <div style="width:30px;height:30px;border-radius:8px;background:#DD5530;border:2px solid #2A2622;position:relative;box-shadow:2px 2px 0 rgba(42,38,34,0.18);">
+        <div style="position:absolute;right:5px;top:5px;width:6px;height:6px;border-radius:50%;background:#FCFBF8;"></div>
+      </div>
+      <span style="font-family:Caveat;font-size:30px;font-weight:700;line-height:1;">Marlow</span>
+    </div>
+    <div style="font-family:Caveat;font-size:42px;font-weight:700;line-height:1.05;">Core flow — first wireframes</div>
+    <div style="font-size:17px;color:#7C746B;margin-top:6px;max-width:640px;">Connect → Create → Review &amp; export. Three screens, the whole product. Rough structure first — visuals come later.</div>
+    <div style="display:flex;gap:9px;margin-top:14px;">
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#7C746B;border:1.5px solid #BBB4A9;border-radius:20px;padding:4px 11px;">low-fi</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#7C746B;border:1.5px solid #BBB4A9;border-radius:20px;padding:4px 11px;">desktop + mobile</span>
+      <span style="font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:1.5px;text-transform:uppercase;color:#7C746B;border:1.5px solid #BBB4A9;border-radius:20px;padding:4px 11px;">campaigns only</span>
+    </div>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- ============ SECTION 1 — CONNECT ===================== -->
+  <!-- ====================================================== -->
+  <div style="max-width:1180px;margin:0 auto;padding-top:38px;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:22px;">
+      <div style="width:34px;height:34px;border-radius:50%;border:2.5px solid #2A2622;display:flex;align-items:center;justify-content:center;font-family:Caveat;font-weight:700;font-size:21px;flex:none;background:#FCFBF8;">1</div>
+      <div style="font-family:Caveat;font-weight:700;font-size:30px;line-height:1;">Connect your brand</div>
+      <div style="font-size:16px;color:#7C746B;">First run only · paste a URL, that's it — no account to connect</div>
+    </div>
+
+    <div style="display:flex;gap:44px;align-items:flex-start;flex-wrap:wrap;">
+
+      <!-- DESKTOP -->
+      <sc-if value="{{ showDesktop }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-family:Caveat;font-size:17px;color:#9C948A;padding-left:4px;">Desktop ⌐</span>
+        <div style="position:relative;width:680px;background:#FCFBF8;border:2.5px solid #2A2622;border-radius:16px;box-shadow:5px 6px 0 rgba(42,38,34,0.10);padding:34px 40px 36px;">
+          <!-- brand mark -->
+          <div style="display:flex;align-items:center;gap:9px;justify-content:center;margin-bottom:24px;">
+            <div style="width:24px;height:24px;border-radius:6px;background:#DD5530;border:1.5px solid #2A2622;position:relative;"><div style="position:absolute;right:4px;top:4px;width:5px;height:5px;border-radius:50%;background:#FCFBF8;"></div></div>
+            <span style="font-family:Caveat;font-size:23px;font-weight:700;">Marlow</span>
+          </div>
+          <div style="text-align:center;font-family:Kalam;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#9C948A;margin-bottom:8px;">Step 1 · one time</div>
+          <div style="text-align:center;font-family:Caveat;font-size:31px;font-weight:700;line-height:1.1;">Let's set up your brand</div>
+          <div style="text-align:center;font-size:15px;color:#7C746B;margin:8px auto 26px;max-width:380px;">Paste your store. Marlow pulls your logo, colors, fonts, and a few products — automatically.</div>
+
+          <!-- input + button -->
+          <div style="display:flex;gap:10px;align-items:stretch;">
+            <div style="flex:1;border:2px solid #2A2622;border-radius:10px;background:#fff;padding:0 14px;display:flex;align-items:center;font-family:'JetBrains Mono',monospace;font-size:13px;color:#A39A8F;height:48px;">https://yourstore.com<span style="display:inline-block;width:1.5px;height:16px;background:#2A2622;margin-left:2px;"></span></div>
+            <div style="display:inline-flex;align-items:center;justify-content:center;background:#DD5530;color:#FCFBF8;border:2px solid #2A2622;border-radius:10px;padding:0 20px;font-family:Kalam;font-weight:700;font-size:15px;box-shadow:2px 2px 0 rgba(42,38,34,0.18);white-space:nowrap;" data-comment-anchor="7ec2b27b61-div">Pull my brand</div>
+          </div>
+
+          <div style="text-align:center;margin-top:13px;font-size:14px;color:#7C746B;">No store to scan? <span style="color:#DD5530;text-decoration:underline;text-underline-offset:2px;font-weight:700;">Upload your brand assets</span> — logo, fonts &amp; colors</div>
+
+          <!-- divider -->
+          <div style="height:1.5px;background:#E2DCD2;margin:30px 0 22px;position:relative;"><span style="position:absolute;left:50%;top:-11px;transform:translateX(-50%);background:#FCFBF8;padding:0 12px;font-family:'JetBrains Mono',monospace;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;">what we found</span></div>
+
+          <!-- pulled preview -->
+          <div style="display:flex;gap:22px;align-items:flex-start;">
+            <div style="display:flex;flex-direction:column;gap:7px;align-items:center;">
+              <div style="width:64px;height:64px;border-radius:12px;border:2px solid #2A2622;background:#EFEBE3;display:flex;align-items:center;justify-content:center;font-family:Caveat;font-size:15px;color:#9C948A;">logo</div>
+              <span style="font-size:13px;color:#9C948A;">Logo</span>
+            </div>
+            <div style="flex:1;">
+              <div style="font-family:Kalam;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:8px;">Colors</div>
+              <div style="display:flex;gap:8px;margin-bottom:18px;" data-comment-anchor="c0ca4103d9-div">
+                <div style="width:30px;height:30px;border-radius:7px;border:1.5px solid #2A2622;background:#2A2622;"></div>
+                <div style="width:30px;height:30px;border-radius:7px;border:1.5px solid #2A2622;background:#DD5530;"></div>
+                <div style="width:30px;height:30px;border-radius:7px;border:1.5px solid #2A2622;background:#C9BBA6;"></div>
+                <div style="width:30px;height:30px;border-radius:7px;border:1.5px solid #2A2622;background:#EFEBE3;"></div>
+              </div>
+              <div style="font-family:Kalam;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:8px;">Fonts</div>
+              <div style="display:flex;gap:8px;margin-bottom:18px;">
+                <div style="border:1.5px solid #2A2622;border-radius:7px;padding:5px 11px;background:#fff;display:flex;align-items:baseline;gap:7px;"><span style="font-family:Caveat;font-size:19px;font-weight:700;line-height:1;">Aa</span><span style="font-size:11px;color:#7C746B;">Heading</span></div>
+                <div style="border:1.5px solid #2A2622;border-radius:7px;padding:5px 11px;background:#fff;display:flex;align-items:baseline;gap:7px;"><span style="font-family:Kalam;font-size:17px;line-height:1;">Aa</span><span style="font-size:11px;color:#7C746B;">Body</span></div>
+              </div>
+              <div style="font-family:Kalam;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:8px;">Products</div>
+              <div style="display:flex;gap:10px;">
+                <div style="width:52px;height:52px;border:1.5px solid #2A2622;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+                <div style="width:52px;height:52px;border:1.5px solid #2A2622;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+                <div style="width:52px;height:52px;border:1.5px solid #2A2622;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+                <div style="width:52px;height:52px;border:1.5px solid #2A2622;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+              </div>
+            </div>
+          </div>
+
+          <div style="display:flex;gap:10px;justify-content:flex-end;margin-top:28px;">
+            <div style="display:inline-flex;align-items:center;background:#FCFBF8;color:#2A2622;border:2px solid #2A2622;border-radius:10px;padding:10px 16px;font-family:Kalam;font-weight:700;font-size:14px;">Edit</div>
+            <div style="display:inline-flex;align-items:center;background:#DD5530;color:#FCFBF8;border:2px solid #2A2622;border-radius:10px;padding:10px 18px;font-family:Kalam;font-weight:700;font-size:14px;box-shadow:2px 2px 0 rgba(42,38,34,0.18);">Looks right — continue</div>
+          </div>
+        </div>
+
+        <!-- notes -->
+        <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+        <div style="width:680px;margin-top:6px;border-left:3px solid #DD5530;padding:4px 0 4px 16px;">
+          <div style="font-family:Caveat;font-size:20px;color:#DD5530;font-weight:700;margin-bottom:4px;">notes</div>
+          <div style="display:flex;flex-direction:column;gap:3px;font-family:Caveat;font-size:18px;color:#4A443D;">
+            <div>› one field. Paste the URL — no login, no OAuth, no store connection.</div>
+            <div>› everything below is auto-pulled. The founder just glances and confirms.</div>
+            <div>› we pull logo, colors, fonts &amp; products — the full kit a branded email needs.</div>
+            <div>› can't detect them? Founder uploads logo, fonts &amp; colors manually instead.</div>
+            <div>› saved after first run, so they land on Create next time.</div>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- MOBILE -->
+      <sc-if value="{{ showMobile }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-family:Caveat;font-size:17px;color:#9C948A;padding-left:4px;">Mobile ⌐</span>
+        <div style="position:relative;width:300px;background:#FCFBF8;border:2.5px solid #2A2622;border-radius:32px;box-shadow:5px 6px 0 rgba(42,38,34,0.10);padding:14px 16px 26px;">
+          <div style="width:64px;height:6px;border-radius:6px;background:#D7D2CA;margin:2px auto 18px;"></div>
+          <div style="display:flex;align-items:center;gap:7px;justify-content:center;margin-bottom:16px;">
+            <div style="width:20px;height:20px;border-radius:5px;background:#DD5530;border:1.5px solid #2A2622;position:relative;"><div style="position:absolute;right:3px;top:3px;width:4px;height:4px;border-radius:50%;background:#FCFBF8;"></div></div>
+            <span style="font-family:Caveat;font-size:19px;font-weight:700;">Marlow</span>
+          </div>
+          <div style="text-align:center;font-family:Kalam;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:6px;">Step 1</div>
+          <div style="text-align:center;font-family:Caveat;font-size:25px;font-weight:700;line-height:1.1;margin-bottom:6px;">Set up your brand</div>
+          <div style="text-align:center;font-size:13px;color:#7C746B;margin-bottom:18px;">Paste your store. We'll pull the rest.</div>
+          <div style="border:2px solid #2A2622;border-radius:10px;background:#fff;padding:11px 12px;font-family:'JetBrains Mono',monospace;font-size:11.5px;color:#A39A8F;margin-bottom:10px;">https://yourstore.com</div>
+          <div style="text-align:center;background:#DD5530;color:#FCFBF8;border:2px solid #2A2622;border-radius:10px;padding:11px;font-family:Kalam;font-weight:700;font-size:14px;box-shadow:2px 2px 0 rgba(42,38,34,0.18);margin-bottom:8px;">Pull my brand</div>
+          <div style="text-align:center;font-size:12px;color:#7C746B;margin-bottom:22px;">or <span style="color:#DD5530;text-decoration:underline;font-weight:700;">upload your assets</span></div>
+          <div style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:#9C948A;margin-bottom:9px;">What we found</div>
+          <div style="display:flex;gap:8px;align-items:center;margin-bottom:12px;">
+            <div style="width:42px;height:42px;border-radius:9px;border:2px solid #2A2622;background:#EFEBE3;display:flex;align-items:center;justify-content:center;font-family:Caveat;font-size:12px;color:#9C948A;flex:none;">logo</div>
+            <div style="display:flex;gap:6px;">
+              <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid #2A2622;background:#2A2622;"></div>
+              <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid #2A2622;background:#DD5530;"></div>
+              <div style="width:22px;height:22px;border-radius:6px;border:1.5px solid #2A2622;background:#C9BBA6;"></div>
+            </div>
+          </div>
+          <div style="display:flex;gap:6px;align-items:center;margin-bottom:14px;">
+            <div style="border:1.5px solid #2A2622;border-radius:6px;padding:3px 9px;background:#fff;font-family:Caveat;font-size:15px;font-weight:700;line-height:1;">Aa</div>
+            <div style="border:1.5px solid #2A2622;border-radius:6px;padding:3px 9px;background:#fff;font-family:Kalam;font-size:13px;line-height:1;">Aa</div>
+            <span style="font-size:11px;color:#9C948A;">Fonts</span>
+          </div>
+          <div style="display:flex;gap:7px;margin-bottom:20px;">
+            <div style="flex:1;height:44px;border:1.5px solid #2A2622;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+            <div style="flex:1;height:44px;border:1.5px solid #2A2622;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+            <div style="flex:1;height:44px;border:1.5px solid #2A2622;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+          </div>
+          <div style="text-align:center;background:#DD5530;color:#FCFBF8;border:2px solid #2A2622;border-radius:10px;padding:11px;font-family:Kalam;font-weight:700;font-size:14px;box-shadow:2px 2px 0 rgba(42,38,34,0.18);">Looks right — continue</div>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- flow connector -->
+  <div style="max-width:1180px;margin:0 auto;display:flex;justify-content:center;padding:30px 0;">
+    <span style="font-family:Caveat;font-size:24px;color:#B0A89D;transform:rotate(-3deg);">then ↓</span>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- ============ SECTION 2 — CREATE ====================== -->
+  <!-- ====================================================== -->
+  <div style="max-width:1180px;margin:0 auto;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:22px;">
+      <div style="width:34px;height:34px;border-radius:50%;border:2.5px solid #2A2622;display:flex;align-items:center;justify-content:center;font-family:Caveat;font-weight:700;font-size:21px;flex:none;background:#FCFBF8;">2</div>
+      <div style="font-family:Caveat;font-weight:700;font-size:30px;line-height:1;">Describe the email</div>
+      <div style="font-size:16px;color:#7C746B;">The generator — this is the home screen on return</div>
+    </div>
+
+    <div style="display:flex;gap:44px;align-items:flex-start;flex-wrap:wrap;">
+
+      <!-- DESKTOP -->
+      <sc-if value="{{ showDesktop }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-family:Caveat;font-size:17px;color:#9C948A;padding-left:4px;">Desktop ⌐</span>
+        <div style="position:relative;width:680px;background:#FCFBF8;border:2.5px solid #2A2622;border-radius:16px;box-shadow:5px 6px 0 rgba(42,38,34,0.10);overflow:hidden;">
+          <!-- top bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:14px 22px;border-bottom:2px solid #2A2622;background:#F4F0E8;">
+            <div style="display:flex;align-items:center;gap:8px;">
+              <div style="width:22px;height:22px;border-radius:6px;background:#DD5530;border:1.5px solid #2A2622;position:relative;"><div style="position:absolute;right:4px;top:4px;width:4px;height:4px;border-radius:50%;background:#FCFBF8;"></div></div>
+              <span style="font-family:Caveat;font-size:20px;font-weight:700;">Marlow</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:8px;border:1.5px solid #BBB4A9;border-radius:20px;padding:5px 12px;">
+              <div style="width:18px;height:18px;border-radius:5px;background:#EFEBE3;border:1.5px solid #9C948A;"></div>
+              <span style="font-size:14px;color:#5C554D;">yourstore.com</span>
+              <span style="font-size:13px;color:#9C948A;">▾</span>
+            </div>
+          </div>
+
+          <div style="padding:30px 40px 36px;">
+            <div style="font-family:Kalam;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#9C948A;margin-bottom:10px;">Describe the email</div>
+            <!-- textarea -->
+            <div style="border:2px solid #2A2622;border-radius:12px;background:#fff;padding:18px;min-height:120px;margin-bottom:8px;">
+              <div style="font-family:Kalam;font-size:16px;color:#2A2622;line-height:1.5;">A 20%-off weekend sale on the summer collection, casual and warm tone, push the linen tee<span style="display:inline-block;width:2px;height:18px;background:#DD5530;margin-left:1px;vertical-align:-3px;"></span></div>
+            </div>
+            <div style="text-align:right;font-family:'JetBrains Mono',monospace;font-size:11px;color:#A39A8F;margin-bottom:26px;">be specific — the more context, the better the draft</div>
+
+            <!-- campaign type -->
+            <div style="font-family:Kalam;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#9C948A;margin-bottom:11px;">Campaign type</div>
+            <div style="display:flex;gap:9px;margin-bottom:28px;flex-wrap:wrap;">
+              <div style="border:2px solid #DD5530;color:#DD5530;background:#FCEFE9;border-radius:9px;padding:8px 16px;font-family:Kalam;font-weight:700;font-size:14px;">Promo</div>
+              <div style="border:1.5px solid #2A2622;border-radius:9px;padding:8px 16px;font-family:Kalam;font-size:14px;">Launch</div>
+              <div style="border:1.5px solid #2A2622;border-radius:9px;padding:8px 16px;font-family:Kalam;font-size:14px;">Holiday</div>
+              <div style="border:1.5px solid #2A2622;border-radius:9px;padding:8px 16px;font-family:Kalam;font-size:14px;">Newsletter</div>
+            </div>
+
+            <!-- product picker -->
+            <div style="font-family:Kalam;font-size:11px;letter-spacing:2.5px;text-transform:uppercase;color:#9C948A;margin-bottom:11px;">Feature a product · optional</div>
+            <div style="display:flex;gap:11px;margin-bottom:30px;">
+              <div style="width:62px;height:62px;border:2.5px solid #DD5530;border-radius:9px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;box-shadow:0 0 0 2px #FCEFE9;"></div>
+              <div style="width:62px;height:62px;border:1.5px solid #2A2622;border-radius:9px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+              <div style="width:62px;height:62px;border:1.5px solid #2A2622;border-radius:9px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+              <div style="width:62px;height:62px;border:1.5px solid #2A2622;border-radius:9px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+              <div style="width:62px;height:62px;border:1.5px dashed #9C948A;border-radius:9px;display:flex;align-items:center;justify-content:center;font-size:22px;color:#9C948A;">+</div>
+            </div>
+
+            <div style="text-align:center;background:#DD5530;color:#FCFBF8;border:2px solid #2A2622;border-radius:11px;padding:15px;font-family:Kalam;font-weight:700;font-size:17px;box-shadow:2px 3px 0 rgba(42,38,34,0.18);">Generate email</div>
+          </div>
+        </div>
+
+        <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+        <div style="width:680px;margin-top:6px;border-left:3px solid #DD5530;padding:4px 0 4px 16px;">
+          <div style="font-family:Caveat;font-size:20px;color:#DD5530;font-weight:700;margin-bottom:4px;">notes</div>
+          <div style="display:flex;flex-direction:column;gap:3px;font-family:Caveat;font-size:18px;color:#4A443D;">
+            <div>› one prompt + a campaign type is the minimum. Product is optional.</div>
+            <div>› brand chip top-right confirms which store is loaded (one brand in beta).</div>
+            <div>› Generate is the only ember button — the single key action on the screen.</div>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- MOBILE -->
+      <sc-if value="{{ showMobile }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-family:Caveat;font-size:17px;color:#9C948A;padding-left:4px;">Mobile ⌐</span>
+        <div style="position:relative;width:300px;background:#FCFBF8;border:2.5px solid #2A2622;border-radius:32px;box-shadow:5px 6px 0 rgba(42,38,34,0.10);padding:14px 16px 24px;">
+          <div style="width:64px;height:6px;border-radius:6px;background:#D7D2CA;margin:2px auto 16px;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:18px;">
+            <div style="display:flex;align-items:center;gap:6px;">
+              <div style="width:18px;height:18px;border-radius:5px;background:#DD5530;border:1.5px solid #2A2622;position:relative;"><div style="position:absolute;right:3px;top:3px;width:4px;height:4px;border-radius:50%;background:#FCFBF8;"></div></div>
+              <span style="font-family:Caveat;font-size:17px;font-weight:700;">Marlow</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:5px;border:1.5px solid #BBB4A9;border-radius:16px;padding:3px 9px;font-size:11px;color:#5C554D;">yourstore.com ▾</div>
+          </div>
+          <div style="font-family:Kalam;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:8px;">Describe the email</div>
+          <div style="border:2px solid #2A2622;border-radius:10px;background:#fff;padding:12px;min-height:78px;margin-bottom:18px;font-family:Kalam;font-size:13px;line-height:1.45;">20%-off weekend sale on the summer collection, warm tone<span style="display:inline-block;width:2px;height:14px;background:#DD5530;margin-left:1px;vertical-align:-2px;"></span></div>
+          <div style="font-family:Kalam;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:8px;">Campaign type</div>
+          <div style="display:flex;gap:6px;margin-bottom:18px;flex-wrap:wrap;">
+            <div style="border:2px solid #DD5530;color:#DD5530;background:#FCEFE9;border-radius:8px;padding:6px 11px;font-family:Kalam;font-weight:700;font-size:12px;">Promo</div>
+            <div style="border:1.5px solid #2A2622;border-radius:8px;padding:6px 11px;font-family:Kalam;font-size:12px;">Launch</div>
+            <div style="border:1.5px solid #2A2622;border-radius:8px;padding:6px 11px;font-family:Kalam;font-size:12px;">Holiday</div>
+            <div style="border:1.5px solid #2A2622;border-radius:8px;padding:6px 11px;font-family:Kalam;font-size:12px;">News</div>
+          </div>
+          <div style="font-family:Kalam;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:8px;">Feature a product · optional</div>
+          <div style="display:flex;gap:7px;margin-bottom:22px;">
+            <div style="flex:1;height:50px;border:2.5px solid #DD5530;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+            <div style="flex:1;height:50px;border:1.5px solid #2A2622;border-radius:8px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#EFEBE3;"></div>
+            <div style="flex:1;height:50px;border:1.5px dashed #9C948A;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:18px;color:#9C948A;">+</div>
+          </div>
+          <div style="text-align:center;background:#DD5530;color:#FCFBF8;border:2px solid #2A2622;border-radius:10px;padding:13px;font-family:Kalam;font-weight:700;font-size:15px;box-shadow:2px 2px 0 rgba(42,38,34,0.18);">Generate email</div>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+
+  <!-- flow connector -->
+  <div style="max-width:1180px;margin:0 auto;display:flex;justify-content:center;padding:30px 0;">
+    <span style="font-family:Caveat;font-size:24px;color:#B0A89D;transform:rotate(2deg);">generate ↓</span>
+  </div>
+
+  <!-- ====================================================== -->
+  <!-- ============ SECTION 3 — EMAIL VIEW ================== -->
+  <!-- ====================================================== -->
+  <div style="max-width:1180px;margin:0 auto;">
+    <div style="display:flex;align-items:baseline;gap:14px;margin-bottom:22px;">
+      <div style="width:34px;height:34px;border-radius:50%;border:2.5px solid #2A2622;display:flex;align-items:center;justify-content:center;font-family:Caveat;font-weight:700;font-size:21px;flex:none;background:#FCFBF8;">3</div>
+      <div style="font-family:Caveat;font-weight:700;font-size:30px;line-height:1;">Review &amp; export</div>
+      <div style="font-size:16px;color:#7C746B;">Quick-edit in place, then export the HTML</div>
+    </div>
+
+    <div style="display:flex;gap:44px;align-items:flex-start;flex-wrap:wrap;">
+
+      <!-- DESKTOP -->
+      <sc-if value="{{ showDesktop }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-family:Caveat;font-size:17px;color:#9C948A;padding-left:4px;">Desktop ⌐</span>
+        <div style="position:relative;width:720px;background:#FCFBF8;border:2.5px solid #2A2622;border-radius:16px;box-shadow:5px 6px 0 rgba(42,38,34,0.10);overflow:hidden;">
+          <!-- top bar -->
+          <div style="display:flex;align-items:center;justify-content:space-between;padding:13px 22px;border-bottom:2px solid #2A2622;background:#F4F0E8;">
+            <div style="display:flex;align-items:center;gap:10px;font-size:14px;color:#5C554D;">
+              <span style="font-size:17px;">‹</span> Back to create
+              <span style="border:1.5px solid #BBB4A9;border-radius:14px;padding:2px 9px;font-family:'JetBrains Mono',monospace;font-size:10px;text-transform:uppercase;letter-spacing:1px;color:#7C746B;">Promo · draft</span>
+            </div>
+            <div style="display:flex;align-items:center;gap:9px;">
+              <div style="display:inline-flex;align-items:center;gap:6px;background:#FCFBF8;color:#2A2622;border:1.5px solid #2A2622;border-radius:9px;padding:8px 12px;font-family:Kalam;font-size:13px;">↻ Regenerate</div>
+              <div style="display:inline-flex;align-items:center;gap:6px;background:#DD5530;color:#FCFBF8;border:2px solid #2A2622;border-radius:9px;padding:8px 16px;font-family:Kalam;font-weight:700;font-size:14px;box-shadow:2px 2px 0 rgba(42,38,34,0.18);">Export email</div>
+            </div>
+          </div>
+
+          <!-- two columns -->
+          <div style="display:flex;">
+            <!-- email canvas -->
+            <div style="flex:1;padding:24px 26px;background:#EEEAE2;">
+              <!-- subject / preview -->
+              <div style="background:#fff;border:1.5px solid #2A2622;border-radius:8px;padding:11px 14px;margin-bottom:16px;">
+                <div style="display:flex;gap:8px;margin-bottom:7px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:#9C948A;width:54px;flex:none;padding-top:2px;">SUBJECT</span><span style="font-family:Kalam;font-weight:700;font-size:15px;">The summer edit — 20% off this weekend</span></div>
+                <div style="display:flex;gap:8px;"><span style="font-family:'JetBrains Mono',monospace;font-size:9px;letter-spacing:1px;color:#9C948A;width:54px;flex:none;padding-top:2px;">PREVIEW</span><span style="font-family:Kalam;font-size:13px;color:#5C554D;">Linen, made for long days. Two days only.</span></div>
+              </div>
+              <!-- rendered email body -->
+              <div style="background:#fff;border:1.5px solid #2A2622;border-radius:8px;padding:22px;">
+                <div style="text-align:center;font-family:Caveat;font-size:17px;font-weight:700;color:#9C948A;margin-bottom:16px;">your logo</div>
+                <div style="height:150px;border:1.5px solid #C3BCB1;border-radius:6px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#F2EEE6;margin-bottom:18px;"></div>
+                <div style="height:18px;width:72%;background:#C9C2B7;border-radius:5px;margin:0 auto 12px;"></div>
+                <div style="height:9px;width:90%;background:#DCD7CE;border-radius:5px;margin:0 auto 6px;"></div>
+                <div style="height:9px;width:84%;background:#DCD7CE;border-radius:5px;margin:0 auto 20px;"></div>
+                <!-- product card -->
+                <div style="display:flex;gap:14px;border:1.5px solid #E2DCD2;border-radius:8px;padding:12px;margin-bottom:20px;align-items:center;">
+                  <div style="width:78px;height:78px;flex:none;border:1.5px solid #C3BCB1;border-radius:6px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#F2EEE6;"></div>
+                  <div style="flex:1;">
+                    <div style="height:11px;width:60%;background:#C9C2B7;border-radius:5px;margin-bottom:8px;"></div>
+                    <div style="height:9px;width:35%;background:#DCD7CE;border-radius:5px;margin-bottom:12px;"></div>
+                    <div style="display:inline-block;height:9px;width:46%;background:#DD5530;border-radius:5px;"></div>
+                  </div>
+                </div>
+                <div style="text-align:center;background:#DD5530;color:#FCFBF8;border-radius:7px;padding:12px;font-family:Kalam;font-weight:700;font-size:15px;margin-bottom:20px;">Shop the sale →</div>
+                <div style="height:7px;width:50%;background:#E2DCD2;border-radius:5px;margin:0 auto 5px;"></div>
+                <div style="height:7px;width:38%;background:#E2DCD2;border-radius:5px;margin:0 auto;"></div>
+              </div>
+            </div>
+
+            <!-- right rail -->
+            <div style="width:204px;flex:none;border-left:2px solid #2A2622;padding:20px 18px;background:#FCFBF8;">
+              <div style="font-family:Kalam;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:12px;">Quick edits</div>
+              <div style="border:1.5px dashed #DD5530;border-radius:8px;padding:9px 11px;font-family:Kalam;font-size:13px;color:#4A443D;margin-bottom:9px;background:#FCEFE9;">✎ Click any text to edit in place</div>
+              <div style="border:1.5px solid #2A2622;border-radius:8px;padding:9px 11px;font-family:Kalam;font-size:13px;margin-bottom:9px;display:flex;align-items:center;gap:7px;">↻ Regenerate a section</div>
+              <div style="border:1.5px solid #2A2622;border-radius:8px;padding:9px 11px;font-family:Kalam;font-size:13px;margin-bottom:22px;display:flex;align-items:center;gap:7px;">⇄ Swap product</div>
+              <div style="height:1.5px;background:#E2DCD2;margin-bottom:18px;"></div>
+              <div style="font-family:Kalam;font-size:10px;letter-spacing:2px;text-transform:uppercase;color:#9C948A;margin-bottom:10px;">Export</div>
+              <div style="display:flex;flex-direction:column;gap:7px;margin-bottom:20px;">
+                <div style="border:1.5px solid #2A2622;border-radius:8px;padding:8px 11px;font-family:Kalam;font-size:13px;text-align:center;">Copy HTML</div>
+                <div style="border:1.5px solid #2A2622;border-radius:8px;padding:8px 11px;font-family:Kalam;font-size:13px;text-align:center;">Download .html</div>
+              </div>
+              <div style="border:1.5px solid #BBB4A9;border-radius:10px;padding:12px;text-align:center;background:#F4F0E8;">
+                <div style="font-family:Caveat;font-size:18px;font-weight:700;line-height:1.15;margin-bottom:9px;">Would you send this?</div>
+                <div style="display:flex;gap:8px;justify-content:center;">
+                  <div style="width:38px;height:34px;border:1.5px solid #2A2622;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:#fff;">👍</div>
+                  <div style="width:38px;height:34px;border:1.5px solid #2A2622;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:16px;background:#fff;">👎</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <sc-if value="{{ showNotes }}" hint-placeholder-val="{{ true }}">
+        <div style="width:720px;margin-top:6px;border-left:3px solid #DD5530;padding:4px 0 4px 16px;">
+          <div style="font-family:Caveat;font-size:20px;color:#DD5530;font-weight:700;margin-bottom:4px;">notes</div>
+          <div style="display:flex;flex-direction:column;gap:3px;font-family:Caveat;font-size:18px;color:#4A443D;">
+            <div>› subject + preview text + designed body — generated together as one email.</div>
+            <div>› editing is light-touch: inline text, regenerate a section, swap a product. No full editor.</div>
+            <div>› export only (copy / download HTML) — paste into Klaviyo, Shopify, Mailchimp.</div>
+            <div>› the 👍/👎 at export is the success signal: "I'd actually send this."</div>
+          </div>
+        </div>
+        </sc-if>
+      </div>
+      </sc-if>
+
+      <!-- MOBILE -->
+      <sc-if value="{{ showMobile }}" hint-placeholder-val="{{ true }}">
+      <div style="display:flex;flex-direction:column;gap:12px;">
+        <span style="font-family:Caveat;font-size:17px;color:#9C948A;padding-left:4px;">Mobile ⌐</span>
+        <div style="position:relative;width:300px;background:#FCFBF8;border:2.5px solid #2A2622;border-radius:32px;box-shadow:5px 6px 0 rgba(42,38,34,0.10);padding:14px 14px 22px;">
+          <div style="width:64px;height:6px;border-radius:6px;background:#D7D2CA;margin:2px auto 14px;"></div>
+          <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;font-size:12px;color:#5C554D;">
+            <span>‹ Back</span>
+            <span style="border:1.5px solid #BBB4A9;border-radius:14px;padding:2px 8px;font-family:'JetBrains Mono',monospace;font-size:9px;text-transform:uppercase;color:#7C746B;">Promo</span>
+          </div>
+          <!-- subject/preview -->
+          <div style="background:#fff;border:1.5px solid #2A2622;border-radius:8px;padding:9px 11px;margin-bottom:12px;">
+            <div style="font-family:Kalam;font-weight:700;font-size:13px;margin-bottom:4px;">The summer edit — 20% off</div>
+            <div style="font-family:Kalam;font-size:11px;color:#5C554D;">Linen, made for long days.</div>
+          </div>
+          <!-- email body -->
+          <div style="background:#fff;border:1.5px solid #2A2622;border-radius:8px;padding:14px;margin-bottom:14px;">
+            <div style="text-align:center;font-family:Caveat;font-size:13px;font-weight:700;color:#9C948A;margin-bottom:10px;">your logo</div>
+            <div style="height:92px;border:1.5px solid #C3BCB1;border-radius:6px;background:linear-gradient(45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),linear-gradient(-45deg,transparent calc(50% - 0.75px),#C3BCB1 calc(50% - 0.75px),#C3BCB1 calc(50% + 0.75px),transparent calc(50% + 0.75px)),#F2EEE6;margin-bottom:12px;"></div>
+            <div style="height:13px;width:70%;background:#C9C2B7;border-radius:4px;margin:0 auto 9px;"></div>
+            <div style="height:8px;width:88%;background:#DCD7CE;border-radius:4px;margin:0 auto 5px;"></div>
+            <div style="height:8px;width:80%;background:#DCD7CE;border-radius:4px;margin:0 auto 16px;"></div>
+            <div style="text-align:center;background:#DD5530;color:#FCFBF8;border-radius:6px;padding:10px;font-family:Kalam;font-weight:700;font-size:13px;">Shop the sale →</div>
+          </div>
+          <!-- sticky actions -->
+          <div style="display:flex;gap:7px;margin-bottom:12px;">
+            <div style="flex:1;border:1.5px solid #2A2622;border-radius:8px;padding:9px;font-family:Kalam;font-size:12px;text-align:center;">✎ Edit</div>
+            <div style="flex:1;border:1.5px solid #2A2622;border-radius:8px;padding:9px;font-family:Kalam;font-size:12px;text-align:center;">↻ Section</div>
+          </div>
+          <div style="text-align:center;background:#DD5530;color:#FCFBF8;border:2px solid #2A2622;border-radius:10px;padding:12px;font-family:Kalam;font-weight:700;font-size:15px;box-shadow:2px 2px 0 rgba(42,38,34,0.18);margin-bottom:12px;">Export email</div>
+          <div style="text-align:center;font-family:Caveat;font-size:16px;color:#5C554D;">Would you send this?  👍 👎</div>
+        </div>
+      </div>
+      </sc-if>
+    </div>
+  </div>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1280,&quot;height&quot;:900},&quot;showNotes&quot;:{&quot;editor&quot;:&quot;boolean&quot;,&quot;default&quot;:true,&quot;tsType&quot;:&quot;boolean&quot;},&quot;deviceView&quot;:{&quot;editor&quot;:&quot;enum&quot;,&quot;options&quot;:[&quot;Both&quot;,&quot;Desktop&quot;,&quot;Mobile&quot;],&quot;default&quot;:&quot;Both&quot;,&quot;tsType&quot;:&quot;string&quot;}}">
+class Component extends DCLogic {
+  renderVals() {
+    const dv = this.props.deviceView ?? 'Both';
+    return {
+      showNotes: this.props.showNotes ?? true,
+      showDesktop: dv !== 'Mobile',
+      showMobile: dv !== 'Desktop',
+    };
+  }
+}
+</script>
+</body>
+</html>

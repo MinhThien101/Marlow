@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/fonts.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/colors.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/typography.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/spacing.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/tokens/effects.css">
+<link rel="stylesheet" href="_ds/marlow-design-system-437815e3-80c1-4ea4-8138-661f32d278f7/styles.css">
+<style>
+  *, *::before, *::after { box-sizing: border-box; }
+  html, body { margin: 0; }
+  body { background: var(--surface-page); color: var(--text-body); font-family: var(--font-sans); -webkit-font-smoothing: antialiased; }
+  a { color: inherit; text-decoration: none; }
+  ::selection { background: var(--ember-100); }
+</style>
+</helmet>
+
+<div style="min-height:100vh;background:var(--surface-page);overflow-x:hidden;">
+
+  <!-- ============================ NAV ============================ -->
+  <header style="position:sticky;top:0;z-index:50;background:color-mix(in srgb, var(--surface-page) 86%, transparent);backdrop-filter:blur(12px);border-bottom:1px solid var(--border-subtle);">
+    <nav style="max-width:1140px;margin:0 auto;height:70px;padding:0 24px;display:flex;align-items:center;justify-content:space-between;gap:24px;">
+      <a href="Marlow%20Website.dc.html" style="display:flex;align-items:center;gap:10px;">
+        <img src="assets/logo-mark.svg" width="30" height="30" alt="Marlow" />
+        <span style="font-family:var(--font-display);font-size:23px;font-weight:500;letter-spacing:-0.01em;color:var(--text-strong);">Marlow</span>
+      </a>
+      <div style="display:flex;align-items:center;gap:30px;">
+        <a href="Marlow%20Website.dc.html#how" style="font-size:14.5px;font-weight:500;color:var(--text-muted);" style-hover="color:var(--text-strong);">How it works</a>
+        <a href="Marlow%20Website.dc.html#samples" style="font-size:14.5px;font-weight:500;color:var(--text-muted);" style-hover="color:var(--text-strong);">Examples</a>
+        <a href="Pricing.dc.html" style="font-size:14.5px;font-weight:600;color:var(--text-strong);">Pricing</a>
+        <a href="FAQ.dc.html" style="font-size:14.5px;font-weight:500;color:var(--text-muted);" style-hover="color:var(--text-strong);">FAQ</a>
+      </div>
+      <div style="display:flex;align-items:center;gap:14px;">
+        <a href="Marlow%20App.dc.html" style="font-size:14.5px;font-weight:600;color:var(--text-strong);" style-hover="color:var(--accent-text);">Sign in</a>
+        <a href="Marlow%20App.dc.html" style="display:inline-flex;align-items:center;height:40px;padding:0 18px;border-radius:var(--radius-md);background:var(--ember-500);color:var(--text-on-ember);font-weight:600;font-size:14.5px;box-shadow:var(--shadow-xs);transition:background 120ms,box-shadow 120ms;" style-hover="background:var(--ember-600);box-shadow:var(--shadow-ember);">Try the demo</a>
+      </div>
+    </nav>
+  </header>
+
+  <!-- ============================ HEADER ============================ -->
+  <section style="max-width:1140px;margin:0 auto;padding:84px 24px 48px;text-align:center;">
+    <div style="font-size:12px;font-weight:700;letter-spacing:0.08em;text-transform:uppercase;color:var(--accent-text);margin-bottom:16px;">Pricing</div>
+    <h1 style="font-family:var(--font-display);font-size:54px;font-weight:500;line-height:1.04;letter-spacing:-0.025em;color:var(--text-strong);margin:0 auto 20px;max-width:680px;text-wrap:balance;">Simple pricing. One job, done well.</h1>
+    <p style="font-size:18px;line-height:1.55;color:var(--text-muted);margin:0 auto;max-width:520px;">Above a $10 gig, far below a $2,500 agency. One flat plan, cancel anytime. No per-email surprises.</p>
+    <div style="display:inline-flex;align-items:center;gap:8px;margin-top:24px;height:32px;padding:0 14px;border-radius:var(--radius-pill);background:var(--ember-50);border:1px solid var(--ember-100);">
+      <span style="width:7px;height:7px;border-radius:50%;background:var(--ember-500);"></span>
+      <span style="font-size:13px;font-weight:600;color:var(--ember-700);">Beta pricing — locked in for early founders</span>
+    </div>
+  </section>
+
+  <!-- ============================ TIERS ============================ -->
+  <section style="max-width:1080px;margin:0 auto;padding:16px 24px 40px;">
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;align-items:stretch;">
+      <sc-for list="{{ plans }}" as="p" hint-placeholder-count="3">
+        <div style="position:relative;border:{{ p.border }};border-radius:var(--radius-xl);padding:34px 30px;background:var(--surface-card);box-shadow:{{ p.shadow }};display:flex;flex-direction:column;">
+          <sc-if value="{{ p.popular }}" hint-placeholder-val="{{ false }}">
+            <span style="position:absolute;top:-13px;left:50%;transform:translateX(-50%);display:inline-flex;align-items:center;height:26px;padding:0 14px;border-radius:var(--radius-pill);background:var(--ember-500);color:#fff;font-size:12px;font-weight:600;letter-spacing:0.02em;box-shadow:var(--shadow-ember);">Most popular</span>
+          </sc-if>
+          <div style="font-size:15px;font-weight:600;color:var(--text-strong);margin-bottom:4px;">{{ p.name }}</div>
+          <div style="font-size:13.5px;color:var(--text-subtle);margin-bottom:18px;">{{ p.tagline }}</div>
+          <div style="display:flex;align-items:baseline;gap:5px;margin-bottom:6px;">
+            <span style="font-family:var(--font-display);font-size:46px;font-weight:500;letter-spacing:-0.02em;color:var(--text-strong);">{{ p.price }}</span>
+            <span style="font-size:15px;color:var(--text-subtle);">/mo</span>
+          </div>
+          <div style="font-size:13px;color:var(--text-subtle);margin-bottom:24px;">{{ p.billednote }}</div>
+          <a href="Marlow%20App.dc.html" style="display:inline-flex;align-items:center;justify-content:center;height:46px;border-radius:var(--radius-md);font-weight:600;font-size:15px;margin-bottom:26px;background:{{ p.ctaBg }};color:{{ p.ctaColor }};border:{{ p.ctaBorder }};box-shadow:var(--shadow-xs);transition:background 120ms,box-shadow 120ms;" style-hover="box-shadow:var(--shadow-md);">{{ p.cta }}</a>
+          <div style="font-family:var(--font-mono);font-size:10.5px;letter-spacing:0.06em;text-transform:uppercase;color:var(--text-subtle);margin-bottom:14px;">{{ p.includesLabel }}</div>
+          <div style="display:flex;flex-direction:column;gap:12px;">
+            <sc-for list="{{ p.features }}" as="f" hint-placeholder-count="5">
+              <div style="display:flex;align-items:flex-start;gap:10px;">
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="var(--ember-600)" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="flex:none;margin-top:1px;"><polyline points="20 6 9 17 4 12"></polyline></svg>
+                <span style="font-size:14px;line-height:1.45;color:var(--text-body);">{{ f }}</span>
+              </div>
+            </sc-for>
+          </div>
+        </div>
+      </sc-for>
+    </div>
+    <p style="text-align:center;font-size:13.5px;color:var(--text-subtle);margin:28px auto 0;max-width:560px;">Every plan exports clean HTML to Klaviyo, Shopify Email, and Mailchimp. Sending, list management, and analytics live in your ESP — Marlow makes the email.</p>
+  </section>
+
+  <!-- ============================ COMPARE STRIP ============================ -->
+  <section style="background:var(--surface-card);border-top:1px solid var(--border-subtle);border-bottom:1px solid var(--border-subtle);">
+    <div style="max-width:1080px;margin:0 auto;padding:64px 24px;">
+      <h2 style="font-family:var(--font-display);font-size:32px;font-weight:500;letter-spacing:-0.015em;color:var(--text-strong);margin:0 0 8px;text-align:center;">How it compares</h2>
+      <p style="font-size:15.5px;color:var(--text-muted);margin:0 0 40px;text-align:center;">The same campaign email, three ways.</p>
+      <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:22px;">
+        <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:26px;background:var(--surface-page);">
+          <div style="font-size:14px;font-weight:600;color:var(--text-strong);margin-bottom:6px;">DIY — ChatGPT + Canva</div>
+          <div style="font-family:var(--font-display);font-size:30px;font-weight:500;color:var(--text-strong);margin-bottom:4px;">Free</div>
+          <div style="font-size:13px;color:var(--text-subtle);margin-bottom:18px;">~1 hour per email · looks amateur</div>
+          <div style="font-size:13.5px;line-height:1.6;color:var(--text-muted);">Two tools, lots of copy-paste, and you still can't tell if it looks right.</div>
+        </div>
+        <div style="border:1.5px solid var(--ember-200);border-radius:var(--radius-lg);padding:26px;background:var(--ember-50);">
+          <div style="font-size:14px;font-weight:600;color:var(--ember-700);margin-bottom:6px;">Marlow</div>
+          <div style="font-family:var(--font-display);font-size:30px;font-weight:500;color:var(--text-strong);margin-bottom:4px;">$29–$99</div>
+          <div style="font-size:13px;color:var(--ember-700);margin-bottom:18px;">~5 min per email · looks pro</div>
+          <div style="font-size:13.5px;line-height:1.6;color:var(--text-body);">One prompt, finished on-brand email, clean HTML you can send today.</div>
+        </div>
+        <div style="border:1px solid var(--border-subtle);border-radius:var(--radius-lg);padding:26px;background:var(--surface-page);">
+          <div style="font-size:14px;font-weight:600;color:var(--text-strong);margin-bottom:6px;">Agency / freelancer</div>
+          <div style="font-family:var(--font-display);font-size:30px;font-weight:500;color:var(--text-strong);margin-bottom:4px;">$2,500+</div>
+          <div style="font-size:13px;color:var(--text-subtle);margin-bottom:18px;">Days of turnaround · monthly retainer</div>
+          <div style="font-size:13.5px;line-height:1.6;color:var(--text-muted);">Great work, but slow and far out of reach for a one-person store.</div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ============================ PRICING FAQ ============================ -->
+  <section style="max-width:760px;margin:0 auto;padding:80px 24px;">
+    <h2 style="font-family:var(--font-display);font-size:32px;font-weight:500;letter-spacing:-0.015em;color:var(--text-strong);margin:0 0 36px;text-align:center;">Pricing questions</h2>
+    <div>
+      <sc-for list="{{ pfaqs }}" as="f" hint-placeholder-count="4">
+        <div style="border-bottom:1px solid var(--border-subtle);padding:22px 0;">
+          <div style="font-size:16.5px;font-weight:600;color:var(--text-strong);margin-bottom:7px;">{{ f.q }}</div>
+          <div style="font-size:14.5px;line-height:1.6;color:var(--text-muted);">{{ f.a }}</div>
+        </div>
+      </sc-for>
+    </div>
+    <div style="text-align:center;margin-top:32px;">
+      <a href="FAQ.dc.html" style="display:inline-flex;align-items:center;gap:7px;font-size:15px;font-weight:600;color:var(--accent-text);" style-hover="gap:11px;">
+        See all questions
+        <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================ FINAL CTA ============================ -->
+  <section style="max-width:1140px;margin:0 auto;padding:24px 24px 84px;">
+    <div style="background:var(--surface-inverse);border-radius:var(--radius-2xl);padding:64px 48px;text-align:center;">
+      <h2 style="font-family:var(--font-display);font-size:42px;font-weight:500;line-height:1.06;letter-spacing:-0.02em;color:var(--neutral-50);margin:0 auto 16px;max-width:520px;text-wrap:balance;">Start with your next campaign.</h2>
+      <p style="font-size:17px;line-height:1.55;color:var(--neutral-400);margin:0 auto 30px;max-width:420px;">Try the generator free, pick a plan when you're ready to export.</p>
+      <a href="Marlow%20App.dc.html" style="display:inline-flex;align-items:center;justify-content:center;gap:9px;height:52px;padding:0 30px;border-radius:var(--radius-md);background:var(--ember-500);color:var(--text-on-ember);font-weight:600;font-size:16.5px;box-shadow:var(--shadow-ember);transition:background 120ms;" style-hover="background:var(--ember-600);">
+        Try the demo
+        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"></line><polyline points="12 5 19 12 12 19"></polyline></svg>
+      </a>
+    </div>
+  </section>
+
+  <!-- ============================ FOOTER ============================ -->
+  <footer style="border-top:1px solid var(--border-subtle);background:var(--surface-page);">
+    <div style="max-width:1140px;margin:0 auto;padding:48px 24px 36px;display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;">
+      <a href="Marlow%20Website.dc.html" style="display:flex;align-items:center;gap:10px;">
+        <img src="assets/logo-mark.svg" width="26" height="26" alt="" />
+        <span style="font-family:var(--font-display);font-size:19px;font-weight:500;color:var(--text-strong);">Marlow</span>
+      </a>
+      <span style="font-size:13px;color:var(--text-subtle);">© 2026 Marlow. Made for solo founders.</span>
+    </div>
+  </footer>
+
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:1140,&quot;height&quot;:820}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      plans: [
+        {
+          name: 'Starter', tagline: 'For your first campaigns', price: '$29', billednote: 'Billed monthly',
+          popular: false,
+          border: '1px solid var(--border-subtle)', shadow: 'var(--shadow-sm)',
+          cta: 'Start with Starter', ctaBg: 'var(--surface-card)', ctaColor: 'var(--text-strong)', ctaBorder: '1px solid var(--border-default)',
+          includesLabel: 'Includes',
+          features: ['8 campaign emails a month', 'Connect one brand', 'All four campaign types', 'Inline editing & section regenerate', 'Export to any ESP'],
+        },
+        {
+          name: 'Studio', tagline: 'For founders sending weekly', price: '$59', billednote: 'Billed monthly',
+          popular: true,
+          border: '1.5px solid var(--ember-300)', shadow: 'var(--shadow-lg)',
+          cta: 'Choose Studio', ctaBg: 'var(--ember-500)', ctaColor: 'var(--text-on-ember)', ctaBorder: '1px solid transparent',
+          includesLabel: 'Everything in Starter, plus',
+          features: ['30 campaign emails a month', 'Priority generation', 'Saved brand voice notes', 'Reuse & duplicate past emails', 'Early access to new features'],
+        },
+        {
+          name: 'Pro', tagline: 'For your busiest seasons', price: '$99', billednote: 'Billed monthly',
+          popular: false,
+          border: '1px solid var(--border-subtle)', shadow: 'var(--shadow-sm)',
+          cta: 'Choose Pro', ctaBg: 'var(--surface-card)', ctaColor: 'var(--text-strong)', ctaBorder: '1px solid var(--border-default)',
+          includesLabel: 'Everything in Studio, plus',
+          features: ['Unlimited campaign emails', 'Fastest turnaround', 'Multiple product features per email', 'Priority support', 'Locked-in beta pricing'],
+        },
+      ],
+      pfaqs: [
+        { q: 'Is there a free trial?', a: 'You can generate emails in the demo for free. A plan is needed to export the finished HTML to your ESP.' },
+        { q: 'Can I change plans later?', a: 'Yes. Upgrade or downgrade anytime — changes apply on your next billing cycle. No long-term contract.' },
+        { q: 'What counts as one email?', a: 'One generated campaign you export. Regenerating sections and editing while you refine a single email does not count extra.' },
+        { q: 'Why is it priced monthly?', a: 'Marlow is a subscription so your brand stays connected and ready. During beta, early founders keep this pricing as we grow.' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

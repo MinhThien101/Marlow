@@ -1,0 +1,56 @@
+@import './tokens.css';
+
+* { box-sizing: border-box; }
+
+html, body, #root { height: 100%; }
+
+body {
+  margin: 0;
+  background: var(--surface-page);
+  color: var(--text-body);
+  font-family: var(--font-sans);
+  font-size: 15px;
+  line-height: 1.5;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+button { font-family: var(--font-sans); }
+
+input, textarea { font-family: var(--font-sans); }
+
+::selection { background: var(--ember-100); }
+
+/* shared keyframes used by the app */
+@keyframes mspin { to { transform: rotate(360deg); } }
+@keyframes mfade { from { opacity: 0; transform: translateY(4px); } to { opacity: 1; transform: none; } }
+@keyframes mpop  { from { opacity: 0; transform: scale(0.96); } to { opacity: 1; transform: none; } }
+
+/* scrollbar — quiet, warm */
+::-webkit-scrollbar { width: 11px; height: 11px; }
+::-webkit-scrollbar-thumb { background: var(--neutral-200); border-radius: 999px; border: 3px solid var(--surface-page); }
+::-webkit-scrollbar-thumb:hover { background: var(--neutral-300); }
+
+html { scroll-behavior: smooth; }
+
+/* ---- Marketing site (Home / Pricing / FAQ) responsive layout ---- */
+@media (max-width: 920px) {
+  .home-hero-grid { grid-template-columns: 1fr !important; }
+  .home-4col { grid-template-columns: repeat(2, 1fr) !important; }
+  .home-3col, .pricing-3col { grid-template-columns: 1fr !important; }
+  .home-2col { grid-template-columns: 1fr !important; }
+  .site-footer-grid { grid-template-columns: 1fr 1fr !important; }
+}
+@media (max-width: 720px) {
+  .site-nav-links { display: none !important; }
+  .site-nav-signin { display: none !important; }
+  .site-nav-burger { display: inline-flex !important; }
+}
+@media (min-width: 721px) {
+  /* Never show the mobile dropdown on desktop, even if it was left open on resize. */
+  .site-nav-burger-panel { display: none !important; }
+}
+@media (max-width: 560px) {
+  .home-4col { grid-template-columns: 1fr !important; }
+  .site-footer-grid { grid-template-columns: 1fr !important; }
+}

@@ -4,14 +4,55 @@ import React from 'react'
 import { Button, IconButton, SegmentedControl, Spinner, Icon } from '../../ui/primitives.jsx'
 import { pillarOf } from '../data.jsx'
 import { DesignedEmail, TextEmail, SmsEmail, Footer } from '../email.jsx'
-import { designNotes } from '../ai.js'
+import { designNotes, reviewDesign } from '../ai.js'
 import { useStudioBrand } from '../brandContext.jsx'
+
+// Surfaces the design self-review (the EMAIL_DESIGN anti-pattern checks from
+// ai.js). Mirrors CopyStage's ReviewPanel: green dot = the check holds; ember dot
+// = the founder should look. "Worth a look" lists what was auto-fixed or what
+// still needs a human eye (an unresolved [missing: ...] or [image: ...] gap).
+const DESIGN_LENSES = [['canvas', 'Canvas'], ['palette', 'Palette'], ['type', 'Type'], ['cta', 'CTAs'], ['imagery', 'Imagery'], ['footer', 'Footer']]
+const DesignReview = ({ review }) => {
+  if (!review || !review.checks) return null
+  const { checks, flags = [] } = review
+  return (
+    <div style={{ marginBottom: 18, border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', background: 'var(--surface-sunken)', padding: '10px 12px' }}>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: '0.05em', color: 'var(--text-subtle)', marginBottom: 8 }}>DESIGN CHECK</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {DESIGN_LENSES.map(([k, label]) => {
+          const ok = checks[k] !== false
+          return (
+            <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 'var(--radius-pill)', fontSize: 11, fontWeight: 600, background: 'var(--surface-card)', border: '1px solid var(--border-subtle)', color: ok ? 'var(--text-muted)' : 'var(--ember-600)' }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: ok ? '#3f9d6b' : 'var(--ember-500)' }} />{label}
+            </span>
+          )
+        })}
+      </div>
+      {flags.length > 0 && (
+        <div style={{ marginTop: 9 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-strong)', marginBottom: 4 }}>Worth a look</div>
+          {flags.map((f, i) => (
+            <div key={i} style={{ display: 'flex', gap: 6, fontSize: 12, lineHeight: 1.45, color: 'var(--text-muted)', marginBottom: 3 }}>
+              <span style={{ color: 'var(--ember-500)', flex: 'none' }}>&bull;</span><span>{f}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
 
 export default function DesignStage({ campaign, setCampaign, onBack, onDone }) {
   const sb = useStudioBrand()
   const T = sb.emailTheme
   const brief = campaign.brief
-  const copy = { ...campaign.copy, _pillar: brief.pillar, _pillarLabel: pillarOf(brief.pillar).label }
+  // Lay out the approved copy and self-review it against the design anti-patterns.
+  // The renderer draws the same (auto-fixed) copy the review reasons over.
+  const { designCopy, review } = React.useMemo(() => {
+    const base = { ...campaign.copy, _pillar: brief.pillar, _pillarLabel: pillarOf(brief.pillar).label }
+    return reviewDesign(base, brief, sb)
+  }, [campaign.copy, brief, sb])
+  const copy = designCopy
   const ACCENTS = [T.accent, T.accent2, T.gold, T.ink]
   const [accent, setAccent] = React.useState(campaign.design?.accent || (brief.pillar === 'sales' ? T.accent2 : T.accent))
   const [density, setDensity] = React.useState(campaign.design?.density || 'standard')
@@ -78,6 +119,7 @@ export default function DesignStage({ campaign, setCampaign, onBack, onDone }) {
             <Icon name="Sparkle" size={15} color="#F0A88E" style={{ marginTop: 1, flex: 'none' }} />
             <span style={{ fontSize: 12, lineHeight: 1.5 }}>{notes || 'Reading the copy…'}</span>
           </div>
+          {brief.type !== 'SMS' && <DesignReview review={review} />}
           {brief.type !== 'SMS' && (
             <div style={{ marginBottom: 18 }}>
               <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-strong)', marginBottom: 8 }}>Accent color</div>

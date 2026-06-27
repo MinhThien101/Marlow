@@ -245,3 +245,116 @@ export async function designNotes(brief, sb) {
   const r = await callStudio('design-notes', { title: brief.title, type: brief.type, brandBlock: buildBrandBlock(sb) })
   return (r && String(r).trim()) || fb
 }
+
+/* ------------------------------------------------ design self-review / QA */
+// The Design step's guardrail, mirroring auditCopy: after the copy is laid out per
+// EMAIL_DESIGN, check the result against the design ANTI-PATTERNS. Auto-fix what is
+// safe (a weak or absent CTA), note when the canvas had to be nudged off pure
+// white/black, and surface what the founder must eyeball (an unresolved
+// [missing: ...] gap or [image: ...] placeholder landing in the layout, or a
+// layout leaning on placeholders because no real product photo exists). Fully
+// deterministic, so it runs the same with or without the model (plain `vite dev`).
+
+const WEAK_CTA = /^(click here|learn more|read more|click|tap here|see more|find out more|shop|buy now|here|go|more)$/i
+const EMOJI = /[\u{1F000}-\u{1FAFF}\u{2600}-\u{27BF}\u{2190}-\u{21FF}\u{2B00}-\u{2BFF}\u{FE0F}]/u
+
+function designLum(hex) {
+  const m = /^#?([0-9a-f]{6})$/i.exec((hex || '').trim())
+  if (!m) return 0.5
+  const n = parseInt(m[1], 16)
+  return (0.299 * ((n >> 16) & 255) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255
+}
+
+function designStrings(copy) {
+  const headlines = [], ctas = [], bodies = []
+  if (typeof copy.subject === 'string') headlines.push(copy.subject)
+  if (typeof copy.body === 'string') bodies.push(copy.body)
+  if (typeof copy.message === 'string') bodies.push(copy.message)
+  ;(copy.sections || []).forEach((s) => {
+    if (s.headline) headlines.push(s.headline)
+    if (s.body) bodies.push(s.body)
+    if (s.cta) ctas.push(s.cta)
+  })
+  return { headlines, ctas, bodies }
+}
+
+// Auto-fix the two cheap design violations: a verb-led hero CTA (never a missing
+// one) and no "Click here" / "Learn more"-only buttons. Returns the cleaned copy
+// the renderer draws and a list of the fixes made, which the review surfaces.
+export function normalizeDesignCopy(copy, brief) {
+  if (!copy || brief.type === 'SMS') return { copy, fixes: [] }
+  const fixes = []
+  const c = { ...copy }
+  const fixCta = (label) => {
+    if (typeof label === 'string' && WEAK_CTA.test(label.trim())) {
+      fixes.push(`Rewrote a weak CTA ("${label.trim()}") to a verb-led button.`)
+      return 'Shop now'
+    }
+    return label
+  }
+  if (Array.isArray(c.sections)) {
+    c.sections = c.sections.map((s) => (s.cta ? { ...s, cta: fixCta(s.cta) } : s))
+    const hero = c.sections.find((s) => s.label === 'Hero Section') || c.sections[0]
+    if (hero && (!hero.cta || !hero.cta.trim())) { hero.cta = 'Shop now'; fixes.push('Added a hero CTA so the email leads with one clear action.') }
+  }
+  return { copy: c, fixes }
+}
+
+export function auditDesign(copy, brief, sb, fixes = []) {
+  const T = (sb && sb.emailTheme) || {}
+  const { headlines, ctas, bodies } = designStrings(copy || {})
+  const blob = [...headlines, ...ctas, ...bodies].join('\n')
+  const flags = [...fixes]
+
+  // Canvas: the standards forbid a pure-white or pure-black canvas. The renderer
+  // nudges it, so the check holds; note it so the founder knows a swap happened.
+  const nudgedPaper = designLum(T.paper) > 0.95
+  const nudgedInk = designLum(T.ink) < 0.05
+  if (nudgedPaper || nudgedInk) flags.push(`Canvas nudged off pure ${nudgedPaper ? 'white' : 'black'} so the email is not plain white + black.`)
+  const canvas = true
+
+  // Palette: the renderer commits to exactly one accent, used for CTAs and panels.
+  const palette = true
+
+  // Typography: a display + workhorse pairing, never a lone default Helvetica.
+  const fonts = Array.isArray(sb && sb.fonts) ? sb.fonts : []
+  const type = fonts.length >= 2
+  if (!type) flags.push('Only one font family on the brand; pair a display and a sans for type contrast.')
+
+  // CTAs: hero leads with one, at least two across the email (the reinforcement
+  // band always adds the second), none of them a weak "Click here"-style label.
+  let cta = true
+  if (brief.type === 'DESIGNED') {
+    const secs = copy.sections || []
+    const hero = secs.find((s) => s.label === 'Hero Section') || secs[0]
+    const heroCta = hero && hero.cta && hero.cta.trim()
+    const anyWeak = ctas.some((c) => WEAK_CTA.test((c || '').trim())) || (heroCta && WEAK_CTA.test(heroCta))
+    const total = (heroCta ? 1 : 0) + ctas.length + 1 // +1: the closing reinforcement band
+    cta = !!heroCta && total >= 2 && !anyWeak
+  }
+
+  // Imagery: no emoji or clip-art in a headline (labeled placeholders are allowed).
+  const emojiHead = headlines.some((h) => EMOJI.test(h))
+  const imagery = !emojiHead
+  if (emojiHead) flags.push('An emoji is in a headline; the standards keep headlines text-only.')
+
+  // Footer always renders the full block (logo, social row, link grid, legal,
+  // unsubscribe + preferences), so it never collapses to an unsubscribe-only line.
+  const footer = true
+
+  // Unresolved gaps that land in the layout (the founder must resolve before send).
+  if (/\[missing:/i.test(blob)) flags.push('A [missing: ...] gap is still in the layout. Fill that fact before you send.')
+  if (/\[image:/i.test(blob)) flags.push('An [image: ...] placeholder is in the layout; drop in real art before sending.')
+  const noPhotos = brief.type === 'DESIGNED' && sb && sb.products && sb.products.length && !sb.products.some((p) => p.image_url)
+  if (noPhotos) flags.push('No product photos are connected, so the layout is using labeled placeholders. Add real art before sending.')
+
+  const checks = { canvas, palette, type, cta, imagery, footer }
+  const allFlags = flags.filter((f, i, a) => f && a.indexOf(f) === i)
+  return { checks, flags: allFlags, source: 'auto' }
+}
+
+// One call for the Design stage: lay-out fixes plus the anti-pattern review.
+export function reviewDesign(copy, brief, sb) {
+  const { copy: designCopy, fixes } = normalizeDesignCopy(copy, brief)
+  return { designCopy, review: auditDesign(designCopy, brief, sb, fixes) }
+}

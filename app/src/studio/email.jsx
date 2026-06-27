@@ -208,7 +208,7 @@ export function DesignedEmail({ copy, accent, density, EmailSection }) {
           {s.headline && heading(s.headline, t, { size: 28, center: true, mb: 26 })}
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 16 }}>
             {items.map((it, k) => {
-              const cut = it.match(/^([^:]{2,38}):\s*(.+)$/)
+              const cut = !hasGap(it) && it.match(/^([^:]{2,38}):\s*(.+)$/)
               const lab = cut ? cut[1].trim() : ''
               const txt = cut ? cut[2].trim() : it
               return (
@@ -318,9 +318,10 @@ export function DesignedEmail({ copy, accent, density, EmailSection }) {
           {s.headline && heading(s.headline, t, { size: 28, center: true, mb: 26 })}
           <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
             {steps.map((st, k) => {
-              const cut = st.replace(/^\d+[.)]\s*/, '').match(/^([^:]{2,38}):\s*(.+)$/)
+              const bare = st.replace(/^\d+[.)]\s*/, '')
+              const cut = !hasGap(bare) && bare.match(/^([^:]{2,38}):\s*(.+)$/)
               const lab = cut ? cut[1].trim() : ''
-              const txt = cut ? cut[2].trim() : st.replace(/^\d+[.)]\s*/, '')
+              const txt = cut ? cut[2].trim() : bare
               return (
                 <div key={k} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
                   <span style={{ flex: 'none', width: 30, height: 30, borderRadius: '50%', background: accent, color: T.paper, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: SANS, fontSize: 14, fontWeight: 700 }}>{k + 1}</span>

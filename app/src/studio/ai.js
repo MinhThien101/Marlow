@@ -80,30 +80,40 @@ export async function draftBrief(sb, { type, pillar, ask, offer, requiredLanguag
 /* ------------------------------------------------------------------ copy */
 
 export function fallbackCopy(brief, sb) {
-  const prod = sb.products.find((x) => brief.productFocus && brief.productFocus.toLowerCase().includes(x.title.toLowerCase().split(',')[0])) || sb.products[0] || null
-  const hasOffer = brief.offer && !/^no offer/i.test(brief.offer)
+  // Carry a flagged gap forward instead of defaulting to the first SKU (anti-fabrication).
+  const missingProduct = /^missing info/i.test((brief.productFocus || '').trim())
+  const prod = missingProduct
+    ? null
+    : (sb.products.find((x) => brief.productFocus && brief.productFocus.toLowerCase().includes(x.title.toLowerCase().split(',')[0])) || sb.products[0] || null)
+  const hasOffer = brief.offer && !/^no offer/i.test(brief.offer) && !/^missing info/i.test(brief.offer)
   const shop = sb.shopUrl || sb.url || ''
   const founder = sb.founder
+  // Required language is a hard constraint: make sure it lands verbatim.
+  const reqd = (brief.requiredLanguage || '').trim()
   if (brief.type === 'SMS') {
-    const m = brief.pillar === 'sales'
+    const prodName = prod ? prod.title : '[missing: product]'
+    let m = brief.pillar === 'sales'
       ? `${sb.short}: ${hasOffer ? brief.offer + '. ' : ''}Shop the lineup. ${shop}`
       : brief.pillar === 'community'
       ? `${sb.short}: A quick note from ${founder || 'the team'}. Something new is up, take a look: ${shop}`
-      : `${sb.short}: ${prod ? prod.title + ' is back. ' : ''}While it lasts: ${shop}`
+      : `${sb.short}: ${prod ? prodName + ' is back. ' : ''}While it lasts: ${shop}`
+    // Only fold in required language if it still fits the 160-char budget.
+    if (reqd && (m.length + reqd.length + 1) <= 160) m = `${sb.short}: ${reqd} ${shop}`
     return { message: m.slice(0, 160) }
   }
   if (brief.type === 'TEXT_BASED') {
     const body = brief.pillar === 'community'
       ? `Wanted to send a quick note.\n\nWe have been working on a few things, and ${prod ? `the ${prod.title} is part of it` : 'wanted to share where we are'}. Same care, same standards as always.\n\nTake a look when you have a minute.${founder ? `\n\n- ${founder}` : ''}`
       : `Here is something worth knowing before your next order.\n\n${brief.direction}\n\nIf you have questions, just reply. No rush.`
-    return { subject: brief.title, preview: brief.direction, body }
+    return { subject: brief.title, preview: brief.direction, body: reqd ? `${body}\n\n${reqd}` : body }
   }
   // DESIGNED
+  const missingOffer = /^missing info/i.test((brief.offer || '').trim())
   const sections = brief.structure.map((label) => {
-    if (label === 'Hero Section') return { label, headline: brief.title, body: brief.direction, cta: hasOffer ? 'Shop the offer' : 'Shop now' }
-    if (label === 'Discount Offer') return { label, headline: hasOffer ? brief.offer : 'A little offer', body: 'It applies at checkout.', cta: 'Shop now' }
+    if (label === 'Hero Section') return { label, headline: brief.title, body: reqd ? `${brief.direction}\n\n${reqd}` : brief.direction, cta: hasOffer ? 'Shop the offer' : 'Shop now' }
+    if (label === 'Discount Offer') return { label, headline: hasOffer ? brief.offer : (missingOffer ? '[missing: offer terms]' : 'A little something'), body: hasOffer ? 'It applies at checkout.' : '[missing: offer details]', cta: 'Shop now' }
     if (label === 'Product Grid') return { label, headline: "What's in the shop", body: 'A few of our best.' }
-    if (label === 'Product Spotlight') return { label, headline: prod ? prod.title : brief.title, body: prod ? `${prod.title}${prod.price ? `, ${prod.price}` : ''}. ${prod.note || ''}`.trim() : brief.direction, cta: prod ? `Shop ${prod.title.split(',')[0]}` : 'Shop now' }
+    if (label === 'Product Spotlight') return { label, headline: prod ? prod.title : '[missing: product name]', body: prod ? `${prod.title}${prod.price ? `, ${prod.price}` : ''}. ${prod.note || ''}`.trim() : '[missing: which product this spotlight features]', cta: prod ? `Shop ${prod.title.split(',')[0]}` : 'Shop now' }
     if (label === 'Benefit List') return { label, headline: "Why it's worth it", body: 'Made with care\nShips fast\nEasy returns\nReal support when you need it' }
     if (label === 'Educational Content') return { label, headline: 'The short version', body: brief.direction }
     if (label === 'Social Proof') return { label, headline: 'What customers say', body: '"One of the best I have tried." Real reviews from people who reorder.' }

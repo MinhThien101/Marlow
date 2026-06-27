@@ -1,5 +1,5 @@
 import Anthropic from '@anthropic-ai/sdk'
-import { STUDIO_SYSTEM_PROMPT } from '../../src/lib/studioKnowledge.js'
+import { STUDIO_SYSTEM_PROMPT, copyPlaybook } from '../../src/lib/studioKnowledge.js'
 
 // Marlow Studio AI — three actions, all grounded in the MX skill + email design
 // standards (the system prompt backbone in src/lib/studioKnowledge.js):
@@ -95,32 +95,41 @@ Return JSON: {"title":"<short campaign title, sentence case, under 8 words, or '
 
 async function generateCopy(body) {
   const { brief, instruction } = body
+  const structure = Array.isArray(brief.structure) ? brief.structure : []
+  const playbook = copyPlaybook(brief.type, structure)
+  const unit = brief.type === 'DESIGNED' ? 'section' : brief.type === 'TEXT_BASED' ? 'framework' : 'message type'
+
   let user = `${brandBlockOf(body)}
 
-Write final email copy from this brief. Apply the brand voice rules and the copy doctrine. For DESIGNED emails, one job per section, no printed section labels in the body text. Keep it short.
+Write the FINAL email copy from this brief. Draft in the brand's voice: apply the brand voice rules and their evidence quotes above so it sounds like this brand, not generic DTC. On any conflict between a voice rule and a tactical brief instruction, the voice rule wins.
 
-BRIEF:
+BRIEF (the guardrails; do not widen its scope):
 Title: ${brief.title}
 Direction: ${brief.direction}
 Product focus: ${brief.productFocus}
 Offer: ${brief.offer}
-Type: ${brief.type}${brief.requiredLanguage ? `\nRequired language (use these phrases word-for-word): "${brief.requiredLanguage}"` : ''}${brief.clientNotes ? `\nClient specifications / hard constraints: "${brief.clientNotes}"` : ''}
+Links: ${brief.links || 'No required links'}
+Type: ${brief.type}${brief.requiredLanguage ? `\nRequired language (must appear word-for-word, unaltered): "${brief.requiredLanguage}"` : ''}${brief.clientNotes ? `\nClient specifications / notes (hard constraints, not suggestions): "${brief.clientNotes}"` : ''}
+
+PLAYBOOK (apply the shape, length, and "do not" rules for each named ${unit}):
+${playbook}
+
+HARD CONSTRAINTS:
+- Facts: use ONLY the brand context and this brief. Never invent a product, price, offer, code, percentage, deadline, URL, statistic, testimonial, review, or claim. Reference a product only by a name in the product list, and use only the shop link above.
+- Required language, if present, appears word-for-word and unaltered.
+- Client specifications / notes, if present, are hard constraints.
+- Carry gaps forward: if Product Focus, Offer, Links, or any briefed field still reads "missing info: ...", do NOT invent a value to fill it. Leave a short visible placeholder in square brackets where that fact belongs (for example [missing: product name] or [missing: offer code]) so the founder can fill it before ship.
+- Writing style: ASCII punctuation only (no em-dash, en-dash, or curly quotes; compound-word hyphens are fine). No negative-parallelism or reframe constructions ("not X, but Y" and every variant). No banned AI words (delve, elevate, seamless, curated, unlock, etc.). Sentence-case headlines and eyebrows. Every line earns the next; cut padding.
 `
   if (brief.type === 'DESIGNED') {
-    user += `Sections (in order): ${brief.structure.join(', ')}
-
-Return JSON: {"subject":"...","preview":"...","sections":[{"label":"<exact section label>","headline":"...","body":"...","cta":"<2-3 word button, omit if none>"}]}`
+    user += `\nReturn JSON: {"subject":"...","preview":"...","sections":[{"label":"<exact section label, in the brief order>","headline":"...","body":"...","cta":"<2-3 word button, omit if the section has no CTA>"}]}. One job per section, no printed section labels inside the body text.`
   } else if (brief.type === 'TEXT_BASED') {
-    user += `Framework: ${brief.structure[0]}
-
-Return JSON: {"subject":"...","preview":"...","body":"<the full email as plain prose with \\n\\n between paragraphs, signed with the founder name only if a founder letter>"}`
+    user += `\nReturn JSON: {"subject":"...","preview":"...","body":"<the full email as plain prose with \\n\\n between paragraphs, signed with the founder name only if it is a founder letter>"}`
   } else {
-    user += `Message type: ${brief.structure[0]}
-
-Return JSON: {"message":"<one SMS under 160 characters, include the brand shop link>"}`
+    user += `\nReturn JSON: {"message":"<one SMS under 160 characters including the shop link>"}`
   }
   if (instruction) {
-    user += `\n\nRevise the previous draft with this instruction: "${instruction}". Keep everything else.`
+    user += `\n\nRevise the previous draft with this instruction: "${instruction}". Keep everything else, and keep honoring the playbook and the hard constraints above.`
   }
   return parseJSON(await complete({ user, maxTokens: 1200 }))
 }

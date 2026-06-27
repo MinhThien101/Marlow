@@ -77,3 +77,82 @@ export const EMAIL_DESIGN = `EMAIL DESIGN STANDARDS (how a finished email is lai
 
 // One-sentence design-rationale prompt support uses both blocks above.
 export const STUDIO_SYSTEM_PROMPT = `${MX_STRATEGY}\n\n${EMAIL_DESIGN}`
+
+// ---- 3. Copy playbooks (condensed per-section / framework / SMS) ----------
+// A faithful condensation of references/sections/section-*.md,
+// references/frameworks/framework-*.md, and references/sms/sms-*.md. The brief
+// SELECTS the structure (Step 2); the copy step APPLIES the matching playbook so
+// each section/framework/message follows its real shape, length, and "do not"
+// rules instead of generic "one job per section, keep it short" copy. Injected
+// per draft (only the labels the brief names) the way campaign-copy.md loads only
+// the reference docs a brief calls for.
+
+export const SECTION_PLAYBOOKS = {
+  "Hero Section": "One headline of 4 to 8 words naming the main promise or offer, an optional one-line support only if the headline cannot stand alone, and one CTA pointing at the same job. No body paragraphs, no brand warm-up, no second CTA.",
+  "Product Grid": "A scan block of 2 to 6 items, each a short name plus one distinct one-sentence angle, with one shared CTA at the bottom. Scan-first. No repeated angles and no junk-drawer SKUs; if an item needs several lines it belongs in a Product Spotlight.",
+  "Product Spotlight": "Deep focus on ONE product and ONE angle (the reason it matters in this send): a framing line, 2 to 4 concrete supporting details (materials, build, behavior, outcome), and one CTA to that product. Heavy section; cut any detail that does not strengthen the angle.",
+  "Benefit List": "3 to 6 scan items, each a short label plus a one-line OUTCOME the reader cares about (not a raw feature), concrete and distinct, with an optional heading and optional CTA. Scan-first. No feature dump, no two items restating one outcome.",
+  "Educational Content": "ONE lesson. A heading that names the lesson or surprising fact (not the category), 1 to 3 short paragraphs that deliver it with concrete specifics, and a CTA tying the lesson to the next action. Heavy section; a lesson the reader cannot act on is filler.",
+  "Lifestyle Content": "Anchor in ONE scenario or identity. A heading that names the moment (not the product), 2 to 4 short editorial paragraphs where the reader is the subject and the product is how they show up, and one CTA. Use named occasions, places, and pairings; no 'perfect for any occasion'.",
+  "Brand Story": "ONE narrative arc (origin, a founder decision, or a mission turn) with concrete names, dates, and places. A heading that signals the emotional anchor, 2 to 4 short paragraphs, and one CTA. The turn must change how the reader sees the product; no generic 'we believe' lines.",
+  "Social Proof": "2 to 4 specific testimonials, each a quoted line plus a real attribution (first name and initial, plus the brand's own verified-buyer label), with an optional angle summary line. Place AFTER the core message. Use only approved or provided quotes; if none exist, mark missing info, never invent one.",
+  "Discount Offer": "State the savings math plainly (percent, dollar, BOGO, or gift threshold), the code in bold if there is one or 'auto-applies at checkout' if not, an optional one-line framing, an optional expiration, and one CTA whose verb matches the offer. Carry offer terms verbatim from the brief; never invent a code, amount, or date.",
+  "Promo Banner": "One short supporting strip of 1 to 3 lines carrying a single offer reminder or urgency line near the top, with an optional CTA. Not a second hero; do not stack it with an Urgency Banner; pick one home for the offer.",
+  "Urgency Banner": "An urgency hook naming a SPECIFIC real signal (low stock, last day, batch ending), a one-line consequence of waiting, and one CTA, with an optional label such as 'FINAL HOURS'. Short. A concrete signal beats 'going fast'; never invent urgency.",
+  "Image Block": "One image with a named role plus a short role label (such as 'BEFORE / AFTER' or 'THE FIT'), an optional one-line caption, and an optional CTA, 1 to 3 short lines total. Include an [image: what the visual must show] direction. No generic stock.",
+  "How It Works": "3 to 5 numbered sequential steps, one job per step, each a short bold label plus 1 to 2 sentences, ending with one CTA pointing at the first step. The sequence is the persuasion; drop 'easy', 'simple', and 'fast' filler.",
+  "FAQ": "3 to 5 real objections, each a bold question and a direct answer that leads with the verdict then one supporting detail (2 to 3 sentences max), with an optional CTA. Real confusion only, never 'is this great? yes'.",
+  "Comparison Table": "2 to 3 columns and 3 to 6 rows, one fair comparison dimension per row, with bold headers and row labels and plain body cells, plus an optional heading and CTA. Keep it fair and concrete; no strawman columns.",
+  "Feature Highlight": "ONE feature. A heading naming the feature or its payoff, one framing line on the problem it solves, 2 to 4 bold sub-points breaking it into working parts, and one CTA. Concrete mechanism names beat 'advanced technology'.",
+  "Support Block": "A heading framing the reassurance, 2 to 4 concrete guarantees each with a bold sub-label and 1 to 2 sentences naming a real window, scope, or mechanism (60-day, full refund, US-based support), and one CTA. Carry guarantee terms verbatim; if none are briefed, mark missing info and leave the section out.",
+}
+
+export const FRAMEWORK_PLAYBOOKS = {
+  "Discount Push": "One-line opener (a greeting plus one beat, or a flat offer statement), the explicit offer mechanic with the code bolded, one short line tying it to a real payoff (skip if the offer carries itself), one tight real-urgency line, and one CTA whose verb matches the offer. One offer, one click; no second CTA or P.S. cross-sell.",
+  "Educational Guide": "A hook (a question, a misconception, or one concrete fact) so the reader knows what they will learn by the first line, 2 to 4 concrete teaching beats, one sentence that explicitly links the lesson to the product, and one practical CTA. Teach ONE lesson and cut the rest.",
+  "Founder Letter": "A personal greeting ('Hey [First name],'), the founder name once (either the open or the sign-off, not both), a specific personal observation or honest reflection, what the moment means in 1 to 2 beats, a natural product or offer tie-in, one CTA, and a real human sign-off. An optional one-line P.S. cross-sell fits post-purchase letters. No 'Dear valued customer' and no corporate close.",
+  "Problem-Solution": "Name ONE pain concretely so the reader nods by the second sentence, one beat on why it matters, one fair beat on why the usual alternative fails, the solution reveal (product, mechanic, or stance), and one CTA matching the solution. One pain, one alternative, one solution; do not stack three.",
+  "Event/Launch Announcement": "One line stating the news with a time anchor when relevant, what is launching named clearly (list skimmably if there are several), 1 to 2 concrete why-it-matters beats, an explicit real timing cue, and one access-framed CTA (waitlist or bookmark before launch, shop once live). Do not bury the news under a story or thank-you preamble.",
+  "Cart Recovery": "A short opener that recognizes the cart exists, the items named when the brief carries them (else 'your items'), ONE reason to come back now (the offer OR trust, not both at full volume), an optional support cue, and one CTA to the CART, not the product page or homepage. One urgency beat only; never 'Forgetting something?'.",
+  "Win-Back": "Open by acknowledging the gap without guilt (never 'we miss you'), one concrete return reason (store credit with a non-round amount such as $7.14 outperforms round numbers, or a new mechanic or collection), an optional line acknowledging the reader's state may have changed, and one direct CTA matching the offer. One reason, not three.",
+  "Thank You Note": "A warm opener, often in founder voice, one or two SPECIFIC reasons for appreciation (a real moment, behavior, or season, not 'thanks for being a customer'), a short brand or seasonal reflection, an optional gentle CTA or none, and a personal sign-off. An optional one-line P.S. cross-sell fits post-purchase. No stacked CTAs and no roundup.",
+  "Objection Handler": "Open by naming the hesitation, 3 to 5 specific objections each named and answered with a concrete detail (a number, dimension, policy term, or spec), a reassurance close naming the low-risk path, and one CTA to the product, cart, or specs. Adjectives without specifics fail; never invent a guarantee, window, or spec.",
+  "Review Request": "A short gentle check-in, an explicit direct ask ('What do you think of your [product]?'), one honest reason the feedback matters, and one CTA that deep-links the order's review page when available. No second CTA and no bundled discount; promise an incentive only if the brief carries one.",
+}
+
+export const SMS_RULES = "Under 160 characters including the link. One ask, one shortened link, the brand name leading, no sign-off. STOP is handled by the platform; do not write 'Reply STOP' unless the brand mandates it."
+
+export const SMS_PLAYBOOKS = {
+  "Flash Sale": "Lead with time pressure or scarcity ('Today only', 'Final hours'), state the explicit discount mechanic and an uppercase code, then one verb plus a shortened link. No greeting, never two links.",
+  "New Product": "Name the product immediately with no 'we are excited' preamble, add 2 to 3 short product traits only if the name needs them, then one direct verb plus a link.",
+  "Brand Update": "Brand name plus one short line of the brand's point of view, an optional one-line extension, and one soft CTA such as 'See our story' unless a shop destination is briefed.",
+  "Cart Reminder": "One beat acknowledging the cart ('Looks like checkout did not get finished', never 'Forgetting something?'), an optional item cue when briefed, and one CTA back to the CART.",
+  "Welcome Offer": "A short welcome plus the brand name in one sentence, the offer mechanic and uppercase code in plain text, then one direct shop verb plus a link.",
+  "Restock Alert": "State the stock situation first ('Back in stock', 'Almost gone'), name the product, add an optional real urgency cue, then one CTA tied to the urgency.",
+  "Bundle Deal": "State the bundle promise in one beat, name the bundle with an optional value cue and skip SKU lists, then one bundle-tied CTA.",
+  "Educational Tip": "State the lesson directly as a claim, fact, or contrast, add an optional one-line product tie-in, then one CTA pointing deeper.",
+  "Social Proof": "Lead with the proof (a real quote in quote marks, a real count, or a specific result; no 'many customers say' preamble), an optional supporting line, then one shop CTA.",
+  "Order Update": "Brand name plus the status first ('Your <brand> order has shipped'), an optional one-line context such as carrier or window, then one operational CTA using a real per-order tracking link, never the homepage.",
+  "Win-Back": "Invite, do not accuse (never 'we miss you' or 'where have you been'), give a concrete return reason with the offer mechanic and uppercase code, then one shop CTA.",
+  "Loyalty Reward": "Confirm the status in one beat ('You are in', 'VIP access unlocked'), name the actual reward such as early access or exclusive drops and skip vague 'perks', then one reward-tied CTA.",
+  "Event Promo": "One beat connecting the event to the audience or product, not a history lesson, the offer mechanic and uppercase code, then one shop verb plus a link.",
+}
+
+// Build the playbook block for the labels a brief actually names. DESIGNED gets
+// the ordered section playbooks; TEXT_BASED the one framework; SMS the shared SMS
+// rules plus the one message type. Unknown labels degrade to a safe generic line.
+export function copyPlaybook(type, labels) {
+  const list = Array.isArray(labels) ? labels.filter((s) => typeof s === 'string' && s.trim()) : []
+  if (type === 'TEXT_BASED') {
+    const f = list[0] || 'the named framework'
+    return `${f}: ${FRAMEWORK_PLAYBOOKS[f] || 'follow the named framework beats. Lean prose, no padding, signed by the founder only if it is a founder letter.'}`
+  }
+  if (type === 'SMS') {
+    const m = list[0] || 'the named message type'
+    return `Every SMS: ${SMS_RULES}\n${m}: ${SMS_PLAYBOOKS[m] || 'match the named message type. One ask, one link.'}`
+  }
+  // DESIGNED
+  return list
+    .map((s, i) => `${i + 1}. ${s}: ${SECTION_PLAYBOOKS[s] || 'do the one job this section name implies, with one CTA and no printed section label.'}`)
+    .join('\n')
+}

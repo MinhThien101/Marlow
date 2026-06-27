@@ -131,7 +131,57 @@ HARD CONSTRAINTS:
   if (instruction) {
     user += `\n\nRevise the previous draft with this instruction: "${instruction}". Keep everything else, and keep honoring the playbook and the hard constraints above.`
   }
-  return parseJSON(await complete({ user, maxTokens: 1200 }))
+  const draft = parseJSON(await complete({ user, maxTokens: 1200 }))
+  return reviewCopy(body, brief, draft)
+}
+
+// Phase 2: an independent, skeptical reviewer pass (copy-review-checklist.md).
+// The writer-then-reviewer split is load-bearing, so this is a SEPARATE model
+// call: it runs the six lenses plus the anti-AI writing rules, fixes violations,
+// and returns the corrected copy plus a review report the UI surfaces. If the
+// reviewer ever returns unusable JSON, we fall back to the writer's draft.
+async function reviewCopy(body, brief, draft) {
+  const shape = brief.type === 'DESIGNED'
+    ? '"subject":"...","preview":"...","sections":[{"label":"...","headline":"...","body":"...","cta":"..."}]'
+    : brief.type === 'TEXT_BASED'
+    ? '"subject":"...","preview":"...","body":"..."'
+    : '"message":"..."'
+  const user = `${brandBlockOf(body)}
+
+You are the REVIEWER, working independently from the writer. Posture is skeptical: if you find no issues, you did not look hard enough. Review the DRAFT against the brief, fix every violation, and return corrected copy plus a review report.
+
+BRIEF:
+Title: ${brief.title}
+Direction: ${brief.direction}
+Product focus: ${brief.productFocus}
+Offer: ${brief.offer}
+Links: ${brief.links || 'No required links'}
+Type: ${brief.type}${brief.requiredLanguage ? `\nRequired language (must appear word-for-word): "${brief.requiredLanguage}"` : ''}${brief.clientNotes ? `\nClient specifications / notes (hard constraints): "${brief.clientNotes}"` : ''}
+
+DRAFT (JSON):
+${JSON.stringify(draft)}
+
+Run the SIX LENSES in order, each an independent pass:
+1. Brief alignment: same product, same offer, same single direction as the brief.
+2. Factual integrity: every claim grounded in the brand context or brief; required language present word-for-word; no invented product, price, code, URL, statistic, or testimonial. An unresolved "missing info" stays a visible [missing: ...] placeholder; never invent it away.
+3. Type alignment: DESIGNED keeps the ordered sections, TEXT_BASED keeps the one framework, SMS matches the type and stays under 160 characters.
+4. Voice and brand rules: the brand voice rules win over tactical instructions.
+5. Format and length: hero leads, one job per section, no printed section labels, copy stays short.
+6. Language quality: every sentence earns its place; no padding, no AI patterning.
+
+Also enforce the WRITING STYLE hard rules (a single violation fails the copy): ASCII punctuation only (no em-dash, en-dash, or curly quotes), NO negative-parallelism or reframe constructions ("not X, but Y" and every variant), and none of the banned AI words.
+
+Fix every violation by revising only the offending lines; keep what already works. Return JSON only:
+{ ${shape}, "review": { "checks": { "brief": true, "facts": true, "type": true, "voice": true, "format": true, "language": true }, "flags": [] } }
+Set a check to false only if that lens still has a problem you could not fully resolve. Put a short, specific note in "flags" for anything the founder should eyeball (an unresolved [missing: ...] gap, a voice-versus-brief tension, a fact that needs confirming). Empty array if none.`
+  try {
+    const out = parseJSON(await complete({ user, maxTokens: 1400 }))
+    const hasCopy = brief.type === 'SMS' ? out.message : brief.type === 'TEXT_BASED' ? out.body : Array.isArray(out.sections)
+    if (hasCopy) return out
+    return { ...draft, review: out.review || null }
+  } catch {
+    return draft
+  }
 }
 
 async function designNotes(body) {

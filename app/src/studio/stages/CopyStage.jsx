@@ -41,6 +41,40 @@ const CopyPreview = ({ copy, type }) => {
   )
 }
 
+// Surfaces the copy self-review (the six lenses + anti-AI scan from ai.js).
+// Green dot = the lens is clean; ember dot = the founder should look. "Worth a
+// look" lists anything flagged, e.g. an unresolved [missing: ...] gap.
+const LENSES = [['brief', 'Brief'], ['facts', 'Facts'], ['type', 'Type'], ['voice', 'Voice'], ['format', 'Format'], ['language', 'Language']]
+const ReviewPanel = ({ review }) => {
+  if (!review || !review.checks) return null
+  const { checks, flags = [] } = review
+  return (
+    <div style={{ marginTop: 10, border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius-md)', background: 'var(--surface-sunken)', padding: '10px 12px' }}>
+      <div style={{ fontFamily: 'var(--font-mono)', fontSize: 9.5, letterSpacing: '0.05em', color: 'var(--text-subtle)', marginBottom: 8 }}>SELF-REVIEW</div>
+      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
+        {LENSES.map(([k, label]) => {
+          const ok = checks[k] !== false
+          return (
+            <span key={k} style={{ display: 'inline-flex', alignItems: 'center', gap: 5, padding: '3px 8px', borderRadius: 'var(--radius-pill)', fontSize: 11, fontWeight: 600, background: 'var(--surface-card)', border: '1px solid var(--border-subtle)', color: ok ? 'var(--text-muted)' : 'var(--ember-600)' }}>
+              <span style={{ width: 7, height: 7, borderRadius: '50%', background: ok ? '#3f9d6b' : 'var(--ember-500)' }} />{label}
+            </span>
+          )
+        })}
+      </div>
+      {flags.length > 0 && (
+        <div style={{ marginTop: 9 }}>
+          <div style={{ fontSize: 11.5, fontWeight: 700, color: 'var(--text-strong)', marginBottom: 4 }}>Worth a look</div>
+          {flags.map((f, i) => (
+            <div key={i} style={{ display: 'flex', gap: 6, fontSize: 12, lineHeight: 1.45, color: 'var(--text-muted)', marginBottom: 3 }}>
+              <span style={{ color: 'var(--ember-500)', flex: 'none' }}>&bull;</span><span>{f}</span>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  )
+}
+
 const QUICK = ['Make it warmer', 'Shorter', 'More specific', 'Try a different subject', 'Less salesy']
 
 export default function CopyStage({ campaign, setCampaign, onBack, onNext }) {
@@ -95,7 +129,7 @@ export default function CopyStage({ campaign, setCampaign, onBack, onNext }) {
         )}
         <div style={{ maxWidth: '92%', padding: '11px 14px', borderRadius: 14, borderTopRightRadius: mine ? 4 : 14, borderTopLeftRadius: mine ? 14 : 4, background: mine ? 'var(--surface-inverse)' : 'var(--surface-card)', color: mine ? 'var(--neutral-50)' : 'var(--text-body)', border: mine ? 'none' : '1px solid var(--border-subtle)', boxShadow: mine ? 'none' : 'var(--shadow-sm)', fontSize: 14, lineHeight: 1.5 }}>
           {m.text}
-          {m.copy && <div style={{ marginTop: 11 }}><CopyPreview copy={m.copy} type={brief.type} /></div>}
+          {m.copy && <div style={{ marginTop: 11 }}><CopyPreview copy={m.copy} type={brief.type} /><ReviewPanel review={m.copy.review} /></div>}
         </div>
       </div>
     )

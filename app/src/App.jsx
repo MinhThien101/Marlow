@@ -53,18 +53,20 @@ export default function App() {
   if (session === null) return <PublicSite />
   if (brand === undefined) return <Splash />
 
-  // No brand yet -> brand setup. Editing an existing brand reuses the same editor.
-  if (!brand || editing) {
+  // Editing the brand opens the full-screen editor. This is also the "set it up
+  // by hand" path when no brand exists yet (existing is null -> input phase).
+  if (editing) {
     return (
       <Connect
-        existing={editing ? brand : null}
-        onCancel={editing ? () => setEditing(false) : undefined}
+        existing={brand}
+        onCancel={() => setEditing(false)}
         onDone={(b, ps) => { setBrand(b); if (ps) setProducts(ps); setEditing(false) }}
       />
     )
   }
 
-  // Signed in with a connected brand -> the Studio (4-stage campaign flow).
+  // Signed in -> the Studio. A brand-new account (no brand row yet) lands on the
+  // Brand stage's onboarding empty state inside the flow, not a separate screen.
   return (
     <Studio
       user={session.user}
@@ -72,6 +74,7 @@ export default function App() {
       products={products}
       onSignOut={signOut}
       onEditBrand={() => setEditing(true)}
+      onBrandConnected={(b, ps) => { setBrand(b); if (ps) setProducts(ps) }}
     />
   )
 }

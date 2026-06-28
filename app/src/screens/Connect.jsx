@@ -1,45 +1,8 @@
 import React from 'react'
 import { Card, Button, Input, Badge, Icon, Spinner } from '../ui/primitives.jsx'
-import { saveBrand, replaceProducts, uploadBrandAsset, getProducts } from '../lib/data.js'
-import { serializeProfile, parseProfile } from '../studio/studioBrand.js'
-
-const DEFAULT_PALETTE = ['#1F3A2E', '#C19A53', '#B5452F', '#22201C', '#F4EFE4']
-
-// Map a loose palette onto the email roles we need: a light paper, a dark ink,
-// a readable accent (buttons / brand name), and a warm secondary (eyebrows).
-function hexToRgb(h) {
-  const m = /^#?([0-9a-f]{6})$/i.exec((h || '').trim())
-  if (!m) return null
-  const n = parseInt(m[1], 16)
-  return { r: (n >> 16) & 255, g: (n >> 8) & 255, b: n & 255 }
-}
-function luminance(h) {
-  const c = hexToRgb(h); if (!c) return 0.5
-  return (0.299 * c.r + 0.587 * c.g + 0.114 * c.b) / 255
-}
-function saturation(h) {
-  const c = hexToRgb(h); if (!c) return 0
-  const max = Math.max(c.r, c.g, c.b), min = Math.min(c.r, c.g, c.b)
-  return max === 0 ? 0 : (max - min) / max
-}
-function chooseRoles(palette) {
-  const valid = (palette || []).filter((c) => hexToRgb(c))
-  if (!valid.length) return { paper: '#F4EFE4', ink: '#22201C', accent: '#DD5530', accent2: '#C19A53' }
-  const sorted = [...valid].sort((a, b) => luminance(a) - luminance(b))
-  const dark = sorted.filter((c) => luminance(c) < 0.5)
-  const light = sorted.filter((c) => luminance(c) >= 0.5)
-  // accent: darkest reasonably-saturated colour, else darkest
-  const accent = [...valid].filter((c) => luminance(c) < 0.62)
-    .sort((a, b) => saturation(b) - saturation(a))[0] || sorted[0]
-  const accent2 = [...valid].filter((c) => c !== accent && luminance(c) > 0.35 && luminance(c) < 0.85)
-    .sort((a, b) => saturation(b) - saturation(a))[0] || '#C19A53'
-  return {
-    paper: light[light.length - 1] || '#F4EFE4',
-    ink: sorted[0] || '#22201C',
-    accent,
-    accent2,
-  }
-}
+import { uploadBrandAsset, getProducts } from '../lib/data.js'
+import { parseProfile } from '../studio/studioBrand.js'
+import { DEFAULT_PALETTE, scrapeBrand, researchBrand, saveOnboardedBrand, stripScheme } from '../studio/brandOnboard.js'
 
 function LogoTile({ name, logoUrl, size = 52 }) {
   if (logoUrl) {
@@ -82,25 +45,20 @@ export default function Connect({ onDone, existing = null, onCancel }) {
   const pull = async () => {
     setError(null); setPhase('loading')
     try {
-      const res = await fetch('/api/scrape-brand', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ url }),
-      })
-      const data = await res.json()
-      const b = data.brand || {}
-      setName(b.name || '')
-      setStoreUrl(b.store_url || url.replace(/^https?:\/\//, ''))
-      setLogoUrl(b.logo_url || null)
-      setPalette((b.palette && b.palette.length ? b.palette : DEFAULT_PALETTE).slice(0, 6))
-      setFonts((b.fonts || []).slice(0, 2))
-      setProducts((data.products || []).map((p) => ({ ...p, title: p.title || '', price: p.price || '' })))
+      const s = await scrapeBrand(url)
+      setName(s.name)
+      setStoreUrl(s.store_url)
+      setLogoUrl(s.logo_url)
+      setPalette(s.palette)
+      setFonts(s.fonts)
+      setProducts(s.products)
       setPhase('review')
       // Brand research: read the brand's own words and learn its voice. Best-effort
       // and non-blocking — if it fails, onboarding still works, just without voice.
-      runResearch({ name: b.name, url: b.store_url || url, text: data.text, products: data.products })
+      runResearch({ name: s.name, url: s.store_url, text: s.text, products: s.products })
     } catch (e) {
       // Network failed entirely — let them set up by hand.
-      setStoreUrl(url.replace(/^https?:\/\//, ''))
+      setStoreUrl(stripScheme(url))
       setPalette(DEFAULT_PALETTE)
       setProducts([])
       setPhase('review')
@@ -108,21 +66,13 @@ export default function Connect({ onDone, existing = null, onCancel }) {
   }
 
   const runResearch = async ({ name, url, text, products }) => {
-    if (!text || text.trim().length < 40) return
     setAnalyzing(true)
     try {
-      const res = await fetch('/api/analyze-brand', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ name, url, text, products }),
-      })
-      const data = await res.json()
-      if (data?.ok && data.profile) {
-        const notes = serializeProfile(data.profile)
+      const notes = await researchBrand({ name, url, text, products })
+      if (notes) {
         setVoiceNotes(notes)
         setProfile(parseProfile(notes))
       }
-    } catch (e) {
-      // research is optional — silently skip on failure
     } finally {
       setAnalyzing(false)
     }
@@ -159,20 +109,11 @@ export default function Connect({ onDone, existing = null, onCancel }) {
   const save = async () => {
     setSaving(true); setError(null)
     try {
-      const roles = chooseRoles(palette)
-      const brand = await saveBrand({
+      const { brand, products: saved } = await saveOnboardedBrand({
         id: existing?.id,
-        name: name || storeUrl || 'My brand',
-        store_url: storeUrl, logo_url: logoUrl,
-        palette, fonts,
-        accent: roles.accent,
-        accent2: roles.accent2,
-        paper: roles.paper,
-        ink: roles.ink,
-        voice_notes: voiceNotes ?? existing?.voice_notes ?? null,
+        name, storeUrl, logoUrl, palette, fonts, products,
+        voiceNotes: voiceNotes ?? existing?.voice_notes ?? null,
       })
-      const cleaned = products.filter((p) => p.image_url || p.title)
-      const saved = await replaceProducts(brand.id, cleaned)
       onDone(brand, saved)
     } catch (e) {
       setSaving(false)

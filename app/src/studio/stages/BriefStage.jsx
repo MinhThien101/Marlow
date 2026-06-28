@@ -3,8 +3,9 @@
 import React from 'react'
 import { Button, Input, Textarea, Spinner, Icon } from '../../ui/primitives.jsx'
 import { Eyebrow, Panel, PILLARS, TYPES, pillarOf, CANONICAL_SECTIONS, FRAMEWORKS, MESSAGE_TYPES } from '../data.jsx'
-import { draftBrief } from '../ai.js'
+import { draftBrief, suggestSends, refineBrief } from '../ai.js'
 import { useStudioBrand } from '../brandContext.jsx'
+import ChangeBar from '../ChangeBar.jsx'
 
 // A field is unresolved when the writer left a `missing info:` flag on it. The
 // brief cannot proceed to copy until each flag is filled or explicitly accepted.
@@ -19,6 +20,24 @@ function missingFlags(brief) {
   check('Offer', brief.offer)
   check('Links', brief.links)
   return out
+}
+
+// A pickable suggested send — pillar + type tag, a specific title, and the angle
+// that becomes the "what's this about" line.
+const SuggestionCard = ({ s, disabled, onClick }) => {
+  const p = pillarOf(s.pillar)
+  const [hover, setHover] = React.useState(false)
+  return (
+    <button onClick={onClick} disabled={disabled} onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
+      style={{ textAlign: 'left', cursor: disabled ? 'default' : 'pointer', opacity: disabled ? 0.6 : 1, padding: 14, borderRadius: 'var(--radius-md)', border: '1px solid ' + (hover && !disabled ? 'var(--border-ember, var(--ember-500))' : 'var(--border-subtle)'), background: 'var(--surface-card)', boxShadow: hover && !disabled ? 'var(--shadow-md)' : 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', gap: 7, transition: 'border-color 120ms, box-shadow 120ms' }}>
+      <span style={{ display: 'flex', alignItems: 'center', gap: 7 }}>
+        <span style={{ width: 26, height: 26, flex: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--surface-sunken)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name={p.icon} size={14} color="var(--ember-600)" /></span>
+        <span style={{ fontFamily: 'var(--font-mono)', fontSize: 10, letterSpacing: '0.04em', color: 'var(--text-subtle)', textTransform: 'uppercase' }}>{p.label} · {s.type}</span>
+      </span>
+      <span style={{ fontFamily: 'var(--font-display)', fontSize: 15, fontWeight: 500, color: 'var(--text-strong)', lineHeight: 1.25 }}>{s.title}</span>
+      <span style={{ fontSize: 12.5, lineHeight: 1.45, color: 'var(--text-muted)' }}>{s.angle}</span>
+    </button>
+  )
 }
 
 const PillarCard = ({ p, on, onClick }) => (
@@ -129,6 +148,20 @@ export default function BriefStage({ campaign, setCampaign, onBack, onNext }) {
   const [brief, setBrief] = React.useState(campaign.brief || null)
   const [accepted, setAccepted] = React.useState(false)
   const [busy, setBusy] = React.useState(false)
+  // Suggested sends: only for a fresh brief (skip when reopening a saved campaign).
+  const [suggestions, setSuggestions] = React.useState(null)
+  const [loadingSug, setLoadingSug] = React.useState(!campaign.brief)
+
+  React.useEffect(() => {
+    if (campaign.brief) return
+    let live = true
+    suggestSends(sb)
+      .then((s) => { if (live) setSuggestions(s) })
+      .catch(() => { if (live) setSuggestions([]) })
+      .finally(() => { if (live) setLoadingSug(false) })
+    return () => { live = false }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   const p = pillar ? pillarOf(pillar) : null
   const structure = p ? (type === 'DESIGNED' ? p.designed : type === 'TEXT_BASED' ? [p.framework] : [p.sms]) : []
@@ -137,23 +170,72 @@ export default function BriefStage({ campaign, setCampaign, onBack, onNext }) {
 
   const resetBrief = () => { setBrief(null); setAccepted(false) }
 
-  const draft = async () => {
-    if (!p) return
-    setBusy(true)
-    setAccepted(false)
-    const built = await draftBrief(sb, { type, pillar, ask, offer, requiredLanguage: reqLang, clientNotes })
+  // Draft the brief from current state, with optional overrides so a picked
+  // suggestion can draft immediately (before its setState has flushed).
+  const runDraft = async (over = {}) => {
+    const args = { type, pillar, ask, offer, requiredLanguage: reqLang, clientNotes, ...over }
+    if (!args.pillar) return
+    setBusy(true); setAccepted(false)
+    const built = await draftBrief(sb, args)
     setBrief(built)
+    setBusy(false)
+  }
+
+  const draft = () => runDraft()
+
+  // Picking a suggestion pre-fills type/pillar/ask, then drafts the brief so the
+  // user lands in an editable brief. The manual path below stays fully available.
+  const pickSuggestion = (s) => {
+    setType(s.type); setPillar(s.pillar); setAsk(s.angle)
+    resetBrief()
+    runDraft({ type: s.type, pillar: s.pillar, ask: s.angle })
+  }
+
+  // Conversational edit: apply a plain-language change to the drafted brief.
+  const changeBrief = async (text) => {
+    if (!brief) return
+    setBusy(true)
+    const next = await refineBrief(sb, brief, text)
+    setBrief(next)
     setBusy(false)
   }
 
   const proceed = () => {
     const safeName = brief.title && !MISSING_RE.test(brief.title) ? brief.title : (ask.trim() || 'New campaign')
-    setCampaign((c) => ({ ...c, type, pillar, ask, offerInput: offer, reqLangInput: reqLang, clientNotesInput: clientNotes, brief, name: safeName, copy: null, design: null }))
+    // Non-destructive: keep any downstream copy/design. If this brief changed,
+    // they are flagged stale (in FlowShell) and offered for regeneration, not wiped.
+    setCampaign((c) => ({ ...c, type, pillar, ask, offerInput: offer, reqLangInput: reqLang, clientNotesInput: clientNotes, brief, name: safeName }))
     onNext()
   }
 
   return (
     <div style={{ maxWidth: 760, margin: '0 auto', animation: 'mfade 280ms var(--ease-out, ease) both' }}>
+      {!brief && (loadingSug || (suggestions && suggestions.length > 0)) && (
+        <>
+          <Panel style={{ marginBottom: 16 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+              <Icon name="Sparkles" size={16} color="var(--ember-600)" />
+              <Eyebrow>Suggested sends for {sb.short}</Eyebrow>
+            </div>
+            <p style={{ fontSize: 12.5, color: 'var(--text-muted)', margin: '0 0 14px' }}>Pick one to start a brief you can tweak. Built from your products and voice.</p>
+            {loadingSug ? (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '18px 0', color: 'var(--text-subtle)', fontSize: 13 }}>
+                <Spinner size={16} /> Reading {sb.short} for ideas…
+              </div>
+            ) : (
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
+                {suggestions.map((s, i) => <SuggestionCard key={i} s={s} disabled={busy} onClick={() => pickSuggestion(s)} />)}
+              </div>
+            )}
+          </Panel>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '0 0 16px' }}>
+            <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+            <span style={{ fontSize: 12, color: 'var(--text-subtle)' }}>or start from scratch</span>
+            <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+          </div>
+        </>
+      )}
+
       <Panel style={{ marginBottom: 16 }}>
         <Eyebrow style={{ marginBottom: 10 }}>Campaign type</Eyebrow>
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10 }}>
@@ -226,6 +308,11 @@ export default function BriefStage({ campaign, setCampaign, onBack, onNext }) {
           <BriefField label={type === 'DESIGNED' ? 'Email Sections' : type === 'TEXT_BASED' ? 'Framework' : 'Message Type'}>
             <StructureEditor type={type} structure={brief.structure || []} onChange={(next) => setBrief((b) => ({ ...b, structure: next }))} />
           </BriefField>
+          <div style={{ marginTop: 16, paddingTop: 16, borderTop: '1px solid var(--border-subtle)' }}>
+            <div style={{ fontSize: 12, fontWeight: 600, color: 'var(--text-strong)', marginBottom: 8 }}>Tell Marlow what to change</div>
+            <ChangeBar placeholder="e.g. tighten the direction, lead with the offer, swap the product…" onSubmit={changeBrief} busy={busy}
+              suggestions={['Tighten it', 'More specific', 'Different angle']} />
+          </div>
         </Panel>
       )}
 

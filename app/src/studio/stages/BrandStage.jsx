@@ -1,12 +1,18 @@
 // Stage 1 — Brand. Read-only recap of the connected brand. Who Marlow writes as.
 // Renders the real connected brand; the action button opens the real Connect editor.
 import React from 'react'
-import { Button, Badge, Icon } from '../../ui/primitives.jsx'
+import { Button, Badge, Icon, Input, Spinner } from '../../ui/primitives.jsx'
 import { Eyebrow, Panel } from '../data.jsx'
 import { useStudioBrand } from '../brandContext.jsx'
+import { onboardFromUrl, stripScheme } from '../brandOnboard.js'
 
-export default function BrandStage({ onNext, onEdit }) {
+export default function BrandStage({ onNext, onEdit, onBrandConnected, existingBrandId, brandComplete = false }) {
   const sb = useStudioBrand()
+  // No brand connected yet (or too thin to use) — onboard right here in the flow,
+  // reusing the same scrape → research → save pipeline as the Connect screen.
+  if (!brandComplete) {
+    return <BrandEmptyState existingBrandId={existingBrandId} onConnected={onBrandConnected} onEdit={onEdit} />
+  }
   const T = sb.emailTheme
   const sub = sb.positioning + (sb.founder ? ` Founded by ${sb.founder}${sb.city ? ' in ' + sb.city : ''}.` : '')
   return (
@@ -16,9 +22,10 @@ export default function BrandStage({ onNext, onEdit }) {
           ? <img src={sb.logoUrl} alt="" style={{ width: 56, height: 56, flex: 'none', borderRadius: 'var(--radius-md)', objectFit: 'contain', background: 'var(--surface-sunken)' }} />
           : <span style={{ width: 56, height: 56, flex: 'none', borderRadius: 'var(--radius-md)', background: T.accent, color: T.paper, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 500 }}>{(sb.short || 'B')[0].toUpperCase()}</span>}
         <div style={{ flex: 1 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 500, color: 'var(--text-strong)', lineHeight: 1.1 }}>{sb.name}</div>
-            <Badge tone="success" dot>Connected</Badge>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
+            <div style={{ fontFamily: 'var(--font-display)', fontSize: 24, fontWeight: 500, color: 'var(--text-strong)', lineHeight: 1.1, marginRight: 2 }}>{sb.name}</div>
+            <Badge tone="success" dot>Website connected</Badge>
+            <Badge tone="neutral" dot>Klaviyo not connected</Badge>
           </div>
           <p style={{ fontSize: 14, lineHeight: 1.55, color: 'var(--text-muted)', margin: '6px 0 0', maxWidth: 560 }}>{sub}</p>
         </div>
@@ -90,6 +97,90 @@ export default function BrandStage({ onNext, onEdit }) {
         <span style={{ flex: 1, fontSize: 13.5, lineHeight: 1.5 }}>Marlow will write every campaign as {sb.short} — these rules, this palette, your voice.</span>
         {onNext && <Button variant="inverse" onClick={onNext} iconRight={<Icon name="ArrowRight" size={17} />}>Start a campaign</Button>}
       </div>
+    </div>
+  )
+}
+
+// Empty state — shown when no usable brand is connected. A single prominent URL
+// input runs the scrape → research → save pipeline in place, then the parent
+// re-renders with the connected brand and this stage swaps to the recap above.
+function BrandEmptyState({ existingBrandId, onConnected, onEdit }) {
+  const [url, setUrl] = React.useState('')
+  const [phase, setPhase] = React.useState('idle') // idle | working | error
+  const [step, setStep] = React.useState('scraping') // scraping | researching | saving
+  const [error, setError] = React.useState(null)
+  const working = phase === 'working'
+
+  const pull = async () => {
+    if (!url.trim() || working) return
+    setError(null); setPhase('working'); setStep('scraping')
+    try {
+      const { brand, products } = await onboardFromUrl(url, { id: existingBrandId, onPhase: setStep })
+      onConnected?.(brand, products)
+      // Leave the spinner up — the parent re-render swaps this view for the recap.
+    } catch (e) {
+      setPhase('error')
+      setError("Couldn't read that store. Check the URL and try again, or set your brand up by hand.")
+    }
+  }
+
+  const progress = {
+    scraping: `Reading ${stripScheme(url) || 'your store'}…`,
+    researching: 'Learning your voice…',
+    saving: 'Saving your brand…',
+  }[step] || 'Working…'
+
+  return (
+    <div style={{ maxWidth: 540, margin: '0 auto', animation: 'mfade 280ms var(--ease-out, ease) both' }}>
+      <div style={{ textAlign: 'center', marginBottom: 22 }}>
+        <span style={{ display: 'inline-flex', width: 52, height: 52, borderRadius: 'var(--radius-lg)', background: 'var(--accent-soft)', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+          <Icon name="Sprout" size={26} color="var(--ember-600)" />
+        </span>
+        <h1 style={{ fontFamily: 'var(--font-display)', fontSize: 28, fontWeight: 500, letterSpacing: '-0.015em', color: 'var(--text-strong)', margin: '0 0 8px' }}>Connect your brand</h1>
+        <p style={{ fontSize: 14.5, lineHeight: 1.55, color: 'var(--text-muted)', margin: '0 auto', maxWidth: 420 }}>
+          Paste your store URL. Marlow reads your logo, colors, fonts, products, and voice — automatically. You can fix anything after.
+        </p>
+      </div>
+
+      <Panel>
+        <Input
+          value={url}
+          onChange={(e) => setUrl(e.target.value)}
+          size="lg"
+          placeholder="yourstore.com"
+          disabled={working}
+          onKeyDown={(e) => { if (e.key === 'Enter' && url.trim()) pull() }}
+          prefix={<span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, color: 'var(--text-subtle)' }}>https://</span>}
+        />
+        <div style={{ height: 14 }} />
+        <Button variant="primary" size="lg" fullWidth disabled={working || !url.trim()} onClick={pull}
+          iconLeft={working ? <Spinner size={18} color="#fff" /> : null}
+          iconRight={!working ? <Icon name="ArrowRight" size={18} /> : null}>
+          {working ? progress : 'Pull my brand'}
+        </Button>
+
+        {error && <p style={{ fontSize: 13, color: 'var(--danger)', margin: '14px 0 0', lineHeight: 1.5 }}>{error}</p>}
+
+        <div style={{ display: 'flex', alignItems: 'center', gap: 12, margin: '20px 0' }}>
+          <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+          <span style={{ fontSize: 12, color: 'var(--text-subtle)' }}>or</span>
+          <div style={{ flex: 1, height: 1, background: 'var(--border-subtle)' }} />
+        </div>
+        <button onClick={onEdit} disabled={working}
+          style={{ display: 'flex', width: '100%', alignItems: 'center', gap: 13, padding: '14px 16px', border: '1.5px dashed var(--border-default)', borderRadius: 'var(--radius-lg)', cursor: working ? 'default' : 'pointer', background: 'var(--surface-card)', textAlign: 'left', opacity: working ? 0.6 : 1 }}>
+          <span style={{ width: 38, height: 38, flex: 'none', borderRadius: 'var(--radius-md)', background: 'var(--surface-sunken)', display: 'flex', alignItems: 'center', justifyContent: 'center', color: 'var(--text-muted)' }}>
+            <Icon name="Pencil" size={18} />
+          </span>
+          <span>
+            <span style={{ display: 'block', fontSize: 14.5, fontWeight: 600, color: 'var(--text-strong)' }}>Set it up by hand</span>
+            <span style={{ display: 'block', fontSize: 12.5, color: 'var(--text-subtle)' }}>Enter your name, colors &amp; upload a logo yourself</span>
+          </span>
+        </button>
+      </Panel>
+
+      <p style={{ fontSize: 12.5, color: 'var(--text-subtle)', textAlign: 'center', margin: '16px 0 0' }}>
+        Nothing to connect — Marlow only reads what’s public on your site.
+      </p>
     </div>
   )
 }

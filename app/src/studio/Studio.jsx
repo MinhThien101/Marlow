@@ -67,7 +67,7 @@ const CampaignsHome = ({ campaigns, loading, onNew, onOpen }) => {
 
 /* ----- Brand reference section (sidebar tab) ------------------------- */
 
-const BrandReference = ({ onEdit }) => {
+const BrandReference = ({ onEdit, onBrandConnected, existingBrandId, brandComplete }) => {
   const sb = useStudioBrand()
   const [subtab, setSubtab] = React.useState('identity')
   return (
@@ -77,7 +77,7 @@ const BrandReference = ({ onEdit }) => {
           <button key={v} onClick={() => setSubtab(v)} style={{ padding: '6px 14px', borderRadius: 'var(--radius-pill)', border: 'none', background: subtab === v ? 'var(--surface-active)' : 'transparent', color: subtab === v ? 'var(--text-strong)' : 'var(--text-muted)', fontFamily: 'var(--font-sans)', fontSize: 13, fontWeight: 500, cursor: 'pointer' }}>{l}</button>
         ))}
       </div>
-      {subtab === 'identity' && <BrandStage onEdit={onEdit} />}
+      {subtab === 'identity' && <BrandStage onEdit={onEdit} onBrandConnected={onBrandConnected} existingBrandId={existingBrandId} brandComplete={brandComplete} />}
       {subtab === 'samples' && (
         <Panel style={{ padding: 0, overflow: 'hidden' }}>
           <div style={{ padding: '18px 22px', borderBottom: '1px solid var(--border-subtle)' }}>
@@ -141,8 +141,19 @@ const NAV = [
   { key: 'brand', label: 'Brand', icon: 'Sprout' },
 ]
 
-const BrandChip = () => {
+const BrandChip = ({ hasBrand = true }) => {
   const sb = useStudioBrand()
+  if (!hasBrand) {
+    return (
+      <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', background: 'var(--surface-card)' }}>
+        <span style={{ width: 26, height: 26, flex: 'none', borderRadius: 'var(--radius-sm)', background: 'var(--surface-sunken)', color: 'var(--text-subtle)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}><Icon name="Sprout" size={15} /></span>
+        <span style={{ flex: 1, minWidth: 0 }}>
+          <span style={{ display: 'block', fontSize: 13, fontWeight: 600, color: 'var(--text-strong)' }}>Set up your brand</span>
+          <span style={{ display: 'block', fontFamily: 'var(--font-mono)', fontSize: 10.5, color: 'var(--text-subtle)' }}>No store connected</span>
+        </span>
+      </div>
+    )
+  }
   return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 9, padding: '8px 10px', borderRadius: 'var(--radius-md)', border: '1px solid var(--border-subtle)', background: 'var(--surface-card)', cursor: 'pointer' }}>
       {sb.logoUrl
@@ -157,10 +168,13 @@ const BrandChip = () => {
   )
 }
 
-export default function Studio({ user, brand, products, onSignOut, onEditBrand }) {
+export default function Studio({ user, brand, products, onSignOut, onEditBrand, onBrandConnected }) {
   const sb = React.useMemo(() => buildStudioBrand(brand, products), [brand, products])
   const brandComplete = React.useMemo(() => isBrandComplete(brand, products), [brand, products])
-  const [active, setActive] = React.useState('campaigns') // campaigns | brand | flow
+  const hasBrand = !!brand
+  // No brand yet -> open straight into the flow's Brand stage so the user can
+  // onboard inside the flow rather than on a separate screen.
+  const [active, setActive] = React.useState(hasBrand ? 'campaigns' : 'flow') // campaigns | brand | flow
   const [campaigns, setCampaigns] = React.useState([])
   const [loadingCampaigns, setLoadingCampaigns] = React.useState(true)
   const [openCampaign, setOpenCampaign] = React.useState(null) // null = new campaign
@@ -180,8 +194,8 @@ export default function Studio({ user, brand, products, onSignOut, onEditBrand }
   const openExisting = (card) => { setOpenCampaign(card.campaign); setActive('flow') }
   const saveCampaign = React.useCallback((campaign, id) => saveStudioCampaign({ brandId: brand?.id, campaign, id }), [brand?.id])
   const meta = active === 'brand'
-    ? { title: 'Brand', sub: sb.url || sb.name }
-    : { title: 'Campaigns', sub: 'Everything you’ve made for ' + sb.short }
+    ? { title: 'Brand', sub: hasBrand ? (sb.url || sb.name) : 'Connect your store to begin' }
+    : { title: 'Campaigns', sub: hasBrand ? 'Everything you’ve made for ' + sb.short : 'Connect your brand to get started' }
 
   const displayName = user?.user_metadata?.full_name || user?.user_metadata?.name || user?.email || 'You'
   const avatarUrl = user?.user_metadata?.avatar_url || user?.user_metadata?.picture
@@ -189,7 +203,7 @@ export default function Studio({ user, brand, products, onSignOut, onEditBrand }
   const nav = (
     <aside style={{ width: 232, flex: 'none', background: 'var(--surface-card)', borderRight: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', padding: '20px 16px' }}>
       <img src="/logo-wordmark.svg" alt="Marlow" style={{ height: 26, width: 'auto', margin: '4px 6px 22px' }} />
-      <BrandChip />
+      <BrandChip hasBrand={hasBrand} />
       <nav style={{ display: 'flex', flexDirection: 'column', gap: 3, marginTop: 22 }}>
         {NAV.map((n) => {
           const on = active === n.key
@@ -226,6 +240,9 @@ export default function Studio({ user, brand, products, onSignOut, onEditBrand }
             initialStage={openCampaign ? stageForStatus(statusOf(openCampaign)) : null}
             onSaveCampaign={saveCampaign}
             onEditBrand={onEditBrand}
+            onBrandConnected={onBrandConnected}
+            existingBrandId={brand?.id}
+            brandComplete={brandComplete}
           />
         ) : (
           <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column' }}>
@@ -237,7 +254,7 @@ export default function Studio({ user, brand, products, onSignOut, onEditBrand }
             </header>
             <main style={{ flex: 1, overflow: 'auto', padding: '32px' }}>
               {active === 'campaigns' && <CampaignsHome campaigns={campaigns} loading={loadingCampaigns} onNew={startNew} onOpen={openExisting} />}
-              {active === 'brand' && <BrandReference onEdit={onEditBrand} />}
+              {active === 'brand' && <BrandReference onEdit={onEditBrand} onBrandConnected={onBrandConnected} existingBrandId={brand?.id} brandComplete={brandComplete} />}
             </main>
           </div>
         )}

@@ -90,7 +90,14 @@ ANTI-FABRICATION (hard rule): never invent a Product Focus, Offer, or Link.
 SELF-CHECK before answering: for Product Focus and Campaign Direction, privately name three concrete specifics grounded in the brand context or the ask. If you cannot name three, mark that field "missing info: <what is missing>" instead of padding it with generic language. For the structure, confirm it supports ONE direction and is not overbuilt. Do not print the reasoning; output only the JSON.
 
 Return JSON: {"title":"<short campaign title, sentence case, under 8 words, or 'missing info: campaign title'>","direction":"<one sentence stating the single goal of this send>","productFocus":"<the product or collection this is about, real products only, or 'missing info: ...'>","offer":"<discount/code/expiration, or 'No offer', or 'missing info: ...'>",${shapeJSON}}`
-  return parseJSON(await complete({ user, maxTokens: 900, model: 'claude-opus-4-8' }))
+
+  // Conversational refine: revise an existing brief in place per the instruction,
+  // keeping everything the change does not touch (structure included).
+  let revised = user
+  if (body.instruction && body.prior) {
+    revised += `\n\nThis is a REVISION, not a new brief. Current brief JSON:\n${JSON.stringify(body.prior)}\n\nApply this change and nothing more: "${body.instruction}". Keep every other field as-is, including the structure unless the change requires altering it. Re-output the full brief JSON in the same shape, still honoring the ANTI-FABRICATION rules.`
+  }
+  return parseJSON(await complete({ user: revised, maxTokens: 900, model: 'claude-opus-4-8' }))
 }
 
 async function generateCopy(body) {
@@ -192,6 +199,32 @@ In one sentence (under 28 words, ASCII punctuation, no em-dash), explain the des
   return (await complete({ user, maxTokens: 90 })).trim()
 }
 
+// Suggested sends: read the connected brand and propose 4-6 specific campaigns the
+// founder could ship soon. Grounded in the brand block; anti-fabrication applies.
+async function suggestSends(body) {
+  const now = new Date()
+  const month = now.toLocaleString('en-US', { month: 'long' })
+  const season = ['Winter', 'Winter', 'Spring', 'Spring', 'Spring', 'Summer', 'Summer', 'Summer', 'Fall', 'Fall', 'Fall', 'Winter'][now.getMonth()]
+  const user = `${brandBlockOf(body)}
+
+Suggest 4 to 6 specific campaign sends this brand could ship soon. You are proposing ideas a founder picks from, each grounded in THIS brand's real products, positioning, and audience above.
+
+Timing: it is ${month} (${season}). Let the season lightly inform at most one idea. Do NOT invent a specific holiday, sale, date, or deadline.
+
+For each suggestion choose:
+- pillar: exactly one of educational, sales, social-proof, product, community
+- type: exactly one of DESIGNED, TEXT_BASED, SMS
+- title: a concrete send title in sentence case, under 9 words, naming the real thing ("Restock: the Huila single-origin is back", never "Send a sales email"). Reference products only by names in the brand context.
+- angle: one sentence the founder could drop into a brief as "what this send is about".
+
+Vary the pillars and types across the set. Be specific to this brand; an idea that would fit any store is a failure.
+
+ANTI-FABRICATION (hard rule): never invent a product, price, offer, code, discount, percentage, or date. Use only product names from the brand context. Keep any offer generic ("a seasonal offer") unless the brand context names a real one.
+
+Return JSON: {"suggestions":[{"pillar":"...","type":"...","title":"...","angle":"..."}]}`
+  return parseJSON(await complete({ user, maxTokens: 800 }))
+}
+
 export default async function handler(req) {
   if (req.method === 'OPTIONS') {
     return new Response(null, { status: 204, headers: { 'Access-Control-Allow-Origin': '*', 'Access-Control-Allow-Headers': 'content-type' } })
@@ -209,6 +242,7 @@ export default async function handler(req) {
     if (body.action === 'brief') result = await draftBrief(body)
     else if (body.action === 'copy') result = await generateCopy(body)
     else if (body.action === 'design-notes') result = await designNotes(body)
+    else if (body.action === 'suggest-sends') result = await suggestSends(body)
     else return new Response('unknown action', { status: 400 })
     return Response.json({ ok: true, result })
   } catch (err) {

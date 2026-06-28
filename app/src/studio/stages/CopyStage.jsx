@@ -3,7 +3,7 @@
 import React from 'react'
 import { Button, Icon } from '../../ui/primitives.jsx'
 import { PillarChip } from '../data.jsx'
-import { generateCopy } from '../ai.js'
+import { generateCopy, briefSig } from '../ai.js'
 import { useStudioBrand } from '../brandContext.jsx'
 
 const CopyPreview = ({ copy, type }) => {
@@ -77,15 +77,31 @@ const ReviewPanel = ({ review }) => {
 
 const QUICK = ['Make it warmer', 'Shorter', 'More specific', 'Try a different subject', 'Less salesy']
 
-export default function CopyStage({ campaign, setCampaign, onBack, onNext }) {
+export default function CopyStage({ campaign, setCampaign, onBack, onNext, copyStale = false }) {
   const sb = useStudioBrand()
   const brief = campaign.brief
   const [msgs, setMsgs] = React.useState([])
   const [input, setInput] = React.useState('')
   const [typing, setTyping] = React.useState(false)
   const [copy, setCopy] = React.useState(campaign.copy || null)
+  const [staleOpen, setStaleOpen] = React.useState(false)
   const scrollRef = React.useRef(null)
   const started = React.useRef(false)
+
+  // Surface the stale banner when the brief changed under an existing draft.
+  React.useEffect(() => { if (copyStale) setStaleOpen(true) }, [copyStale])
+
+  const regenerateFromBrief = () => {
+    if (typing) return
+    setStaleOpen(false)
+    setMsgs((m) => [...m, { from: 'marlow', text: 'The brief changed, so I rewrote the copy to match it.' }])
+    setTyping(true)
+    generateCopy(brief, undefined, sb).then((c) => {
+      setCopy(c)
+      setMsgs((m) => [...m, { from: 'marlow', text: 'Rewritten from the updated brief.', copy: c }])
+      setTyping(false)
+    })
+  }
 
   React.useEffect(() => { if (scrollRef.current) scrollRef.current.scrollTop = scrollRef.current.scrollHeight }, [msgs, typing])
 
@@ -115,7 +131,9 @@ export default function CopyStage({ campaign, setCampaign, onBack, onNext }) {
     })
   }
 
-  const proceed = () => { setCampaign((c) => ({ ...c, copy, design: null })); onNext() }
+  // Non-destructive forward: record which brief this copy was built from (so a
+  // later brief edit flags it stale) and keep any downstream design.
+  const proceed = () => { setCampaign((c) => ({ ...c, copy, copyBriefSig: briefSig(brief) })); onNext() }
 
   const Bubble = ({ m }) => {
     const mine = m.from === 'you'
@@ -142,6 +160,15 @@ export default function CopyStage({ campaign, setCampaign, onBack, onNext }) {
         <span style={{ fontFamily: 'var(--font-mono)', fontSize: 11, color: 'var(--text-subtle)' }}>{brief.type}</span>
         <span style={{ flex: 1, fontSize: 12.5, color: 'var(--text-muted)', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{brief.direction}</span>
       </div>
+
+      {staleOpen && (
+        <div style={{ flex: 'none', display: 'flex', alignItems: 'center', gap: 10, padding: '11px 14px', marginBottom: 12, borderRadius: 'var(--radius-md)', background: 'var(--warning-bg, var(--accent-soft))', border: '1px solid var(--warning, var(--border-default))' }}>
+          <Icon name="AlertCircle" size={18} color="var(--warning, var(--ember-600))" />
+          <span style={{ flex: 1, fontSize: 13, color: 'var(--text-strong)' }}>The brief changed since this copy was written.</span>
+          <Button variant="secondary" size="sm" onClick={() => setStaleOpen(false)}>Keep current</Button>
+          <Button variant="primary" size="sm" onClick={regenerateFromBrief} iconLeft={<Icon name="RefreshCw" size={14} />}>Regenerate</Button>
+        </div>
+      )}
 
       <div ref={scrollRef} style={{ flex: 1, overflow: 'auto', display: 'flex', flexDirection: 'column', gap: 18, paddingBottom: 8 }}>
         {msgs.map((m, i) => <Bubble key={i} m={m} />)}

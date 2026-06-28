@@ -2,7 +2,7 @@
 // the MX skill + email design standards). Each call sends the connected brand's
 // context block and has a scripted fallback so the flow works with or without
 // the model (e.g. under plain `vite dev`, where /api/studio-ai is not served).
-import { pillarOf } from './data.jsx'
+import { pillarOf, PILLARS, TYPES } from './data.jsx'
 import { buildBrandBlock } from './studioBrand.js'
 
 async function callStudio(action, payload) {
@@ -18,6 +18,62 @@ async function callStudio(action, payload) {
   } catch {
     return null
   }
+}
+
+/* ----------------------------------------------- staleness signatures ----
+   When an upstream stage is edited after a downstream stage exists, we flag the
+   downstream as stale (and offer to regenerate) instead of silently wiping it.
+   These compact signatures detect "the thing I was built from has changed". */
+
+export function briefSig(brief) {
+  if (!brief) return ''
+  return JSON.stringify({ t: brief.type, p: brief.pillar, ti: brief.title, d: brief.direction, pf: brief.productFocus, o: brief.offer, rl: brief.requiredLanguage, cn: brief.clientNotes, s: brief.structure })
+}
+
+export function copySig(copy) {
+  if (!copy) return ''
+  const { review, _pillar, _pillarLabel, ...rest } = copy
+  return JSON.stringify(rest)
+}
+
+/* -------------------------------------------------------- suggested sends */
+// Opus proposes 4-6 brand-specific campaigns for the Brief stage. The fallback
+// derives ideas from the brand's REAL products and positioning (never a fake
+// catalog) so the stage stays useful under plain `vite dev`.
+
+const PILLAR_KEYS = PILLARS.map((p) => p.key)
+const TYPE_VALUES = TYPES.map((t) => t.value)
+
+function normalizeSuggestion(s) {
+  if (!s || typeof s !== 'object') return null
+  const pillar = PILLAR_KEYS.includes(s.pillar) ? s.pillar : 'product'
+  const type = TYPE_VALUES.includes(s.type) ? s.type : 'DESIGNED'
+  const title = typeof s.title === 'string' ? s.title.trim() : ''
+  const angle = typeof s.angle === 'string' ? s.angle.trim() : ''
+  if (!title && !angle) return null
+  return { pillar, type, title: title || angle.slice(0, 60), angle: angle || title }
+}
+
+function suggestSendsFallback(sb) {
+  const prods = sb.products || []
+  const p0 = prods[0], p1 = prods[1]
+  const out = []
+  if (p0) out.push({ pillar: 'product', type: 'DESIGNED', title: `Spotlight: ${p0.title}`, angle: `Put ${p0.title} in the spotlight with one clear reason to try it now.` })
+  if (prods.length >= 2) out.push({ pillar: 'sales', type: 'DESIGNED', title: 'A few favorites from the shop', angle: `Walk through the current ${sb.short} lineup and point to a couple of standouts.` })
+  out.push({ pillar: 'educational', type: 'TEXT_BASED', title: `The short version of what makes ${sb.short} good`, angle: `Teach one thing that helps a new subscriber understand ${sb.short}.` })
+  out.push({ pillar: 'community', type: 'TEXT_BASED', title: `A note from ${sb.founder || 'the team'}`, angle: `Share where ${sb.short} is right now in a short, honest note.` })
+  out.push({ pillar: 'social-proof', type: 'DESIGNED', title: 'What customers reach for first', angle: `Let a few real ${sb.short} customer favorites carry the trust.` })
+  if (p1) out.push({ pillar: 'product', type: 'SMS', title: `${p1.title.split(',')[0]} is worth a look`, angle: `One short text pointing subscribers at ${p1.title}.` })
+  return out.slice(0, 6)
+}
+
+export async function suggestSends(sb) {
+  const gen = await callStudio('suggest-sends', { brandBlock: buildBrandBlock(sb) })
+  const list = Array.isArray(gen && gen.suggestions) ? gen.suggestions : null
+  const raw = (list && list.length ? list : suggestSendsFallback(sb))
+  const norm = raw.map(normalizeSuggestion).filter(Boolean)
+  const safe = norm.length ? norm : suggestSendsFallback(sb).map(normalizeSuggestion).filter(Boolean)
+  return safe.slice(0, 6)
 }
 
 /* ----------------------------------------------------------------- brief */
@@ -54,9 +110,11 @@ function normalizeStructure(type, selected, fallback) {
   return stack
 }
 
-export async function draftBrief(sb, { type, pillar, ask, offer, requiredLanguage, clientNotes }) {
+export async function draftBrief(sb, { type, pillar, ask, offer, requiredLanguage, clientNotes, instruction, prior }) {
   const fallback = briefFallback(sb, { type, pillar, ask, offer })
-  const gen = await callStudio('brief', { type, pillar, ask, offer, requiredLanguage, clientNotes, brandBlock: buildBrandBlock(sb) })
+  const gen = await callStudio('brief', { type, pillar, ask, offer, requiredLanguage, clientNotes, instruction, prior, brandBlock: buildBrandBlock(sb) })
+  // Refining with no backend: keep the prior brief rather than degrade it.
+  if (instruction && !gen && prior) return prior
   const b = gen || fallback
   const p = pillarOf(pillar)
   // Structure is SELECTED by the brief action from the campaign job. The data.jsx
@@ -75,6 +133,20 @@ export async function draftBrief(sb, { type, pillar, ask, offer, requiredLanguag
     clientNotes: (clientNotes || '').trim() || null,
     structure, type, pillar,
   }
+}
+
+// Conversational brief edit: apply a plain-language change to an existing brief.
+export async function refineBrief(sb, brief, instruction) {
+  return draftBrief(sb, {
+    type: brief.type,
+    pillar: brief.pillar,
+    ask: brief.direction,
+    offer: /^no offer/i.test((brief.offer || '').trim()) ? '' : brief.offer,
+    requiredLanguage: brief.requiredLanguage,
+    clientNotes: brief.clientNotes,
+    instruction,
+    prior: brief,
+  })
 }
 
 /* ------------------------------------------------------------------ copy */
@@ -357,4 +429,70 @@ export function auditDesign(copy, brief, sb, fixes = []) {
 export function reviewDesign(copy, brief, sb) {
   const { copy: designCopy, fixes } = normalizeDesignCopy(copy, brief)
   return { designCopy, review: auditDesign(designCopy, brief, sb, fixes) }
+}
+
+/* ----------------------------------------------- real generated design ----
+   Opus generates the email as MJML server-side and we get compiled, email-safe
+   HTML back (see netlify/functions/design-email.js). Returns null when the
+   backend is unavailable so the Design stage can fall back to the React
+   renderer (plain `vite dev`). Real catalog data is assembled here, in code. */
+
+async function callDesign(payload) {
+  try {
+    const res = await fetch('/api/design-email', {
+      method: 'POST',
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify(payload),
+    })
+    if (!res.ok) return null
+    const data = await res.json()
+    return data && data.ok && data.html ? data : null
+  } catch {
+    return null
+  }
+}
+
+// Assemble ONLY real brand/catalog data for the generator. The model lays it out;
+// it never invents a product, price, image, or link.
+export function buildDesignAssets(sb) {
+  const T = sb.emailTheme || {}
+  const shopUrl = sb.shopUrl || sb.url || ''
+  return {
+    name: sb.name,
+    short: sb.short,
+    founder: sb.founder || '',
+    logoUrl: sb.logoUrl || null,
+    shopUrl,
+    roles: { paper: T.paper, ink: T.ink, accent: T.accent, accent2: T.accent2 },
+    fonts: sb.fonts || [],
+    products: (sb.products || []).map((p) => ({
+      title: p.title,
+      price: p.price || '',
+      image_url: p.image_url || null,
+      url: p.url || shopUrl,
+      note: p.note || '',
+    })),
+  }
+}
+
+// Full email generation (DESIGNED). `instruction` carries an art-direction change.
+export async function designEmail({ sb, brief, copy, accent, density, instruction }) {
+  const data = await callDesign({
+    mode: 'full', type: brief.type, structure: brief.structure,
+    copy, accent, density, instruction,
+    assets: buildDesignAssets(sb), brandBlock: buildBrandBlock(sb),
+  })
+  if (!data) return null
+  return { html: data.html, sections: data.sections || [] }
+}
+
+// Regenerate a single section and swap it back in (real per-section regenerate).
+export async function regenerateSection({ sb, brief, copy, accent, density, sections, index, instruction }) {
+  const data = await callDesign({
+    mode: 'section', type: brief.type, structure: brief.structure,
+    copy, accent, density, sections, index, instruction,
+    assets: buildDesignAssets(sb), brandBlock: buildBrandBlock(sb),
+  })
+  if (!data) return null
+  return { html: data.html, sections: data.sections || [] }
 }
